@@ -78,37 +78,37 @@ def verifyHostname(value):
 ###
 
 def whoisQuery(value):
-	whoisData = collections.OrderedDict()
-	whoisData["name"] = ["-", "Name:"]
-	whoisData["org"] = ["-", "Organization:"]
-	whoisData["address"] = ["-", "Address:"]
-	whoisData["city"] = ["-", "City:"]
-	whoisData["zipcode"] = ["-", "Zip code:"]
-	whoisData["country"] = ["-", "Country:"]
-	whoisData["emails"] = ["-", "Emails:"]
-	whoisData["registrar"] = ["-", "Registrar:"]
-	whoisData["whois_server"] = ["-", "Whois Server:"]
-	whoisData["updated_date"] = ["-", "Updated Date:"]
-	whoisData["expiration_date"] = ["-", "Expiration Date:"]
-	whoisData["creation_date"] = ["-", "Creation Date:"]
-	whoisData["name_servers"] = ["-", "Name Servers:"]
-	domain = whois.whois(value)
+    whoisData = collections.OrderedDict()
+    whoisData["name"] = ["-", "Name:"]
+    whoisData["org"] = ["-", "Organization:"]
+    whoisData["address"] = ["-", "Address:"]
+    whoisData["city"] = ["-", "City:"]
+    whoisData["zipcode"] = ["-", "Zip code:"]
+    whoisData["country"] = ["-", "Country:"]
+    whoisData["emails"] = ["-", "Emails:"]
+    whoisData["registrar"] = ["-", "Registrar:"]
+    whoisData["whois_server"] = ["-", "Whois Server:"]
+    whoisData["updated_date"] = ["-", "Updated Date:"]
+    whoisData["expiration_date"] = ["-", "Expiration Date:"]
+    whoisData["creation_date"] = ["-", "Creation Date:"]
+    whoisData["name_servers"] = ["-", "Name Servers:"]
+    domain = whois.whois(value)
 
-	for rec in whoisData:
-		if domain[rec]:
-			if isinstance(domain[rec], list):
-				if rec is 'name_servers':
-					whoisData[rec][0] = []
-					for val in domain[rec]:
-						whoisData[rec][0].append(val + ":" + verifyHostname(val))
-				else:
-					whoisData[rec][0] = []
-					for val in domain[rec]:
-						whoisData[rec][0].append(val)
-			else:
-				whoisData[rec][0] = str(domain[rec])
+    for rec in whoisData:
+        if domain[rec]:
+            if isinstance(domain[rec], list):
+                if rec is 'name_servers':
+                    whoisData[rec][0] = []
+                    for val in domain[rec]:
+                        whoisData[rec][0].append(val + ":" + verifyHostname(val))
+                else:
+                    whoisData[rec][0] = []
+                    for val in domain[rec]:
+                        whoisData[rec][0].append(val)
+            else:
+                whoisData[rec][0] = str(domain[rec])
 
-	return whoisData
+    return whoisData
 
 ###
 
@@ -127,9 +127,9 @@ def dnsQuery(value):
 
     for rec in dnsData:
         try:
-			answers = dns.resolver.query(value, rec)
-			for answer in answers:
-				dnsData[rec].append(answer.to_text())
+            answers = dns.resolver.query(value, rec)
+            for answer in answers:
+                dnsData[rec].append(answer.to_text())
         except Exception as e:
             dnsData[rec].append('-')
 
@@ -138,54 +138,54 @@ def dnsQuery(value):
 #######################################################
 
 if __name__ == '__main__':
-	print message
-	info = {}
+    print message
+    info = {}
 
-	parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
-	parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain', 
+    parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
+    parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain', 
                         default=None, type=checkDomain, help="Domain to search.")
-	#parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename', 
+    #parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename', 
     #                    type=str, default=None, help='Output in the three major formats at once')
 
-	if len(sys.argv) is 1:
-		parser.print_help()
-		sys.exit()
+    if len(sys.argv) is 1:
+        parser.print_help()
+        sys.exit()
 
-	args = parser.parse_args()
+    args = parser.parse_args()
 
-	info['domain'] = args.domain
-
-#######################################################
-
-	print "[+] Target:"
-	print "-----------"
-	info['ip'] = verifyHostname(info['domain'])
-	print info['domain'] + ":" + info['ip'] + "\n"
+    info['domain'] = args.domain
 
 #######################################################
 
-	print "[+] Whois:"
-	print "----------"
-	info['whois'] = whoisQuery(info['domain'])
-	for key,value in info['whois'].iteritems():
-		if isinstance(value[0], list):
-			print
-			print value[1]
-			for val in value[0]:
-				print val
-			print
-		else:
-			print value[1] + " " + value[0]
+    print "[+] Target:"
+    print "-----------"
+    info['ip'] = verifyHostname(info['domain'])
+    print info['domain'] + ":" + info['ip'] + "\n"
 
 #######################################################
 
-	print "[+] DNS:"
-	print "--------"
-	info['dns'] = dnsQuery(info['domain'])
-	for key,value in info['dns'].iteritems():
-		print key + " DNS record: "
-		for val in value:
-			print val
-		print
+    print "[+] Whois:"
+    print "----------"
+    info['whois'] = whoisQuery(info['domain'])
+    for key,value in info['whois'].iteritems():
+        if isinstance(value[0], list):
+            print
+            print value[1]
+            for val in value[0]:
+                print val
+            print
+        else:
+            print value[1] + " " + value[0]
+
+#######################################################
+
+    print "[+] DNS:"
+    print "--------"
+    info['dns'] = dnsQuery(info['domain'])
+    for key,value in info['dns'].iteritems():
+        print key + " DNS record: "
+        for val in value:
+            print val
+        print
 
 #######################################################
