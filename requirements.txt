@@ -1,2 +1,3 @@
 validators
 python-whois
+dnspython
