@@ -1,14 +1,15 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # encoding: UTF-8
 
 """
-    This file is part of GasMasK
-    Copyright (C) 2018 @maldevel
+    GasMasK - All in one Information gathering tool - OSINT
+    This file is part of GasMasK Project
 
-    TwelveSec Research
-    https://github.com/twelvesec/gasmask
+    Written by: @maldevel
+    Website: https://www.twelvesec.com/
+    GIT: https://github.com/twelvesec/gasmask
 
-    GasMasK - All in one Information gathering tool - OSINT.
+    TwelveSec (@Twelvesec)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,11 +28,8 @@
 """
 
 __author__ = "maldevel"
-__copyright__ = "Copyright (c) 2018 @maldevel"
-__credits__ = ["maldevel"]
 __license__ = "GPLv3"
 __version__ = "1.0"
-__maintainer__ = "maldevel"
 
 #######################################################
 
@@ -53,10 +51,10 @@ message = """
 / /_/ / /_/ (__  ) /  / / /_/ (__  ) /| |
 \____/\__,_/____/_/  /_/\__,_/____/_/ |_|
 
-GasMasK Ver. {}
-Information Gathering Tool - OSINT
-@maldevel
-TwelveSec Research
+GasMasK - All in one Information gathering tool - OSINT
+Ver. {}
+Written by: @maldevel
+https://www.twelvesec.com/
 """.format(__version__)
 
 #######################################################
