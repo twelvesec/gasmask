@@ -43,6 +43,13 @@ import dns.resolver
 import collections
 import re
 from dns import reversename, resolver
+import requests
+import lxml
+
+#######################################################
+
+from requests.packages.urllib3.exceptions import InsecureRequestWarning #remove insecure https warning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning) #remove insecure https warning
 
 #######################################################
 
@@ -65,6 +72,11 @@ def checkDomain(value):
     if not validators.domain(value) or not verifyHostname(value):
         raise argparse.ArgumentTypeError('Invalid {} domain.'.format(value))
     return value
+
+def checkDomainOrIP(value):
+	if not validators.domain(value) and not validators.ip_address.ipv4(value):
+		raise argparse.ArgumentTypeError('Invalid domain or ip address ({}).'.format(value))
+	return value
 
 ###
 
@@ -112,7 +124,7 @@ def whoisQuery(value):
 
 ###
 
-def dnsQuery(value, dnsserver='8.8.8.8'):
+def dnsQuery(value, dnsserver):
 	dnsData = {
         "A":[],
         "CNAME":[],
@@ -149,7 +161,7 @@ def dnsQuery(value, dnsserver='8.8.8.8'):
 
 ###
 
-def tldQuery(value, dnsserver='8.8.8.8'):
+def tldQuery(value, dnsserver):
 	tldData = []
 
 	tlds = [
@@ -194,12 +206,29 @@ def tldQuery(value, dnsserver='8.8.8.8'):
 
 ###
 
-def reverseIPQuery(value, dnsserver='8.8.8.8'):
+def reverseIPQuery(value, dnsserver):
+	try:
+		revname = reversename.from_address(value)
+		myresolver = dns.resolver.Resolver()
+		myresolver.nameservers = [dnsserver]
+		return str(myresolver.query(revname, 'PTR')[0]).rstrip('.')
+	except Exception as e:
+		print e
+		return ''
 
-	revname = reversename.from_address(value)
-	myresolver = dns.resolver.Resolver()
-	myresolver.nameservers = [dnsserver]
-	return str(myresolver.query(revname, 'PTR')[0]).rstrip('.')
+###
+
+def httpStatusQuery(value):
+
+	r = requests.get('http://{}'.format(value), verify=False)
+	title = ''
+	if r.status_code == 200:
+		title = re.search('(?<=<title>).+?(?=</title>)', r.text, re.DOTALL)
+		if title:
+			title = title.group().strip()
+		else:
+			title = ''
+	return r.status_code, title
 
 #######################################################
 
@@ -208,9 +237,11 @@ if __name__ == '__main__':
 	info = {}
 
 	parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
-	parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain', 
+	parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain',
                         default=None, type=checkDomain, help="Domain to search.")
-    #parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename', 
+	parser.add_argument("-s", '--server', action="store", metavar='NAMESERVER', dest='dnsserver',
+                        default=None, type=checkDomainOrIP, help="DNS server to use.")
+    #parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',
     #                    type=str, default=None, help='Output in the four major formats at once.')
 
 	if len(sys.argv) is 1:
@@ -220,6 +251,14 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	info['domain'] = args.domain
+
+#######################################################
+
+	dnsserver = args.dnsserver
+	if not dnsserver:
+		dnsserver = '8.8.8.8'
+	print "[+] Using DNS server: " + dnsserver
+	print
 
 #######################################################
 
@@ -247,7 +286,7 @@ if __name__ == '__main__':
 
 	print "[+] DNS:"
 	print "--------"
-	info['dns'] = dnsQuery(info['domain'])
+	info['dns'] = dnsQuery(info['domain'], dnsserver)
 	for key,value in info['dns'].iteritems():
 		if(len(value) == 1):
 			print key + " DNS record: " + value[0]
@@ -263,15 +302,22 @@ if __name__ == '__main__':
 
 	print "[+] DNS TLD expansion:"
 	print "----------------------"
-	info['tld'] = tldQuery(info['domain'])
+	info['tld'] = tldQuery(info['domain'], dnsserver)
 	for val in info['tld']:
-		print val
+		status_code, title = httpStatusQuery(val.split(':')[0])
+		if status_code == 200:
+			print val + ":" + "HTTP Status " + str(status_code) + ":" + "Title \"" + title + "\""
+		else:
+			print val + ":" + "HTTP Status " + str(status_code)
 	print
 
 #######################################################
 
 	print "[+] Reverse DNS Lookup:"
 	print "-----------------------"
-	info['revdns'] = reverseIPQuery(info['ip'])
-	print info['ip'] + ":" + info['revdns']
+	info['revdns'] = reverseIPQuery(info['ip'], dnsserver)
+	if info['revdns']:
+		print info['ip'] + ":" + info['revdns']
 	print
+
+#######################################################
