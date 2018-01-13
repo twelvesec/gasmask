@@ -42,6 +42,7 @@ import whois
 import dns.resolver
 import collections
 import re
+from dns import reversename, resolver
 
 #######################################################
 
@@ -111,8 +112,8 @@ def whoisQuery(value):
 
 ###
 
-def dnsQuery(value):
-    dnsData = {
+def dnsQuery(value, dnsserver='8.8.8.8'):
+	dnsData = {
         "A":[],
         "CNAME":[],
         "HINFO":[],
@@ -121,28 +122,34 @@ def dnsQuery(value):
         "PTR":[],
         "SOA":[],
         "TXT":[],
-        "SPF":[]
+        "SPF":[],
+        "SRV":[],
+        "RP":[]
     }
 
-    for rec in dnsData:
-        try:
-            answers = dns.resolver.query(value, rec)
-            for answer in answers:
-            	if rec is 'NS':
-            		dnsData[rec].append(answer.to_text() + ":" + verifyHostname(answer.to_text()))
-            	elif rec is 'MX':
-            		domain_name = re.search(' (.*)\.', answer.to_text(), re.IGNORECASE).group(1)
-            		dnsData[rec].append(answer.to_text() + ":" + verifyHostname(domain_name))
-            	else:
-                	dnsData[rec].append(answer.to_text())
-        except Exception as e:
+
+	myresolver = dns.resolver.Resolver()
+	myresolver.nameservers = [dnsserver]
+
+	for rec in dnsData:
+		try:
+			answers = myresolver.query(value, rec)
+			for answer in answers:
+				if rec is 'NS':
+					dnsData[rec].append(answer.to_text() + ":" + verifyHostname(answer.to_text()))
+				elif rec is 'MX':
+					domain_name = re.search(' (.*)\.', answer.to_text(), re.IGNORECASE).group(1)
+					dnsData[rec].append(answer.to_text() + ":" + verifyHostname(domain_name))
+				else:
+					dnsData[rec].append(answer.to_text())
+		except Exception as e:
 			dnsData[rec].append('-')
 
-    return dnsData
+	return dnsData
 
 ###
 
-def tldQuery(value):
+def tldQuery(value, dnsserver='8.8.8.8'):
 	tldData = []
 
 	tlds = [
@@ -171,16 +178,28 @@ def tldQuery(value):
             "ve", "ventures", "vg", "vi", "viajes", "vn", "voyage", "vu", "wang", "wf", "wien", "ws", "xxx", "ye",
             "yt", "za", "zm", "zw"]
 
+	myresolver = dns.resolver.Resolver()
+	myresolver.nameservers = [dnsserver]
+
 	for tld in tlds:
 		try:
 			hostname = value.split('.')[0] + '.' + tld
-			answers = dns.resolver.query(hostname, 'A')
+			answers = myresolver.query(hostname, 'A')
 			for answer in answers:
 				tldData.append(hostname + ":" + answer.to_text())
 		except Exception as e:
 			pass
 
 	return tldData
+
+###
+
+def reverseIPQuery(value, dnsserver='8.8.8.8'):
+
+	revname = reversename.from_address(value)
+	myresolver = dns.resolver.Resolver()
+	myresolver.nameservers = [dnsserver]
+	return str(myresolver.query(revname, 'PTR')[0]).rstrip('.')
 
 #######################################################
 
@@ -230,18 +249,29 @@ if __name__ == '__main__':
 	print "--------"
 	info['dns'] = dnsQuery(info['domain'])
 	for key,value in info['dns'].iteritems():
-		print key + " DNS record: "
-		for val in value:
-			print val
-		print
+		if(len(value) == 1):
+			print key + " DNS record: " + value[0]
+		else:
+			print
+			print key + " DNS record: "
+			for val in value:
+				print val
+			print
+	print
 
 #######################################################
 
 	print "[+] DNS TLD expansion:"
-	print "--------"
+	print "----------------------"
 	info['tld'] = tldQuery(info['domain'])
 	for val in info['tld']:
 		print val
 	print
 
 #######################################################
+
+	print "[+] Reverse DNS Lookup:"
+	print "-----------------------"
+	info['revdns'] = reverseIPQuery(info['ip'])
+	print info['ip'] + ":" + info['revdns']
+	print
