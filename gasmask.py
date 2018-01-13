@@ -239,7 +239,9 @@ def mainFunc():
 	parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain',
                         default=None, type=checkDomain, help="Domain to search.", required=True)
 	parser.add_argument("-s", '--server', action="store", metavar='NAMESERVER', dest='dnsserver',
-                        default=None, type=checkDomainOrIP, help="DNS server to use.")
+                        default='8.8.8.8', type=checkDomainOrIP, help="DNS server to use.")
+	parser.add_argument('-u', '--user-agent', action="store", metavar='USER-AGENT', dest='uagent',
+                        default='GasMasK {}'.format(__version__), type=str, help="User Agent string to use.")
     #parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',
     #                    type=str, default=None, help='Output in the four major formats at once.')
 
@@ -254,9 +256,10 @@ def mainFunc():
 #######################################################
 
 	dnsserver = args.dnsserver
-	if not dnsserver:
-		dnsserver = '8.8.8.8'
 	print "[+] Using DNS server: " + dnsserver
+
+	uagent = args.uagent
+	print "[+] Using User Agent string: " + uagent
 	print
 
 #######################################################
