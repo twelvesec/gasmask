@@ -139,7 +139,6 @@ def dnsQuery(value, dnsserver):
         "RP":[]
     }
 
-
 	myresolver = dns.resolver.Resolver()
 	myresolver.nameservers = [dnsserver]
 
@@ -232,13 +231,13 @@ def httpStatusQuery(value):
 
 #######################################################
 
-if __name__ == '__main__':
+def mainFunc():
 	print message
 	info = {}
 
 	parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 	parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain',
-                        default=None, type=checkDomain, help="Domain to search.")
+                        default=None, type=checkDomain, help="Domain to search.", required=True)
 	parser.add_argument("-s", '--server', action="store", metavar='NAMESERVER', dest='dnsserver',
                         default=None, type=checkDomainOrIP, help="DNS server to use.")
     #parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',
@@ -319,5 +318,16 @@ if __name__ == '__main__':
 	if info['revdns']:
 		print info['ip'] + ":" + info['revdns']
 	print
+
+#######################################################
+
+if __name__ == '__main__':
+
+	try:
+		mainFunc()
+	except KeyboardInterrupt:
+		print "Search interrupted by user.."
+	except:
+		sys.exit()
 
 #######################################################
