@@ -44,7 +44,6 @@ import collections
 import re
 from dns import reversename, resolver
 import requests
-import lxml
 
 #######################################################
 
@@ -68,28 +67,38 @@ https://www.twelvesec.com/
 
 #######################################################
 
-def checkDomain(value):
-    if not validators.domain(value) or not verifyHostname(value):
+## Validate Domain name and existence ##
+
+def CheckDomain(value):
+    if not validators.domain(value) or not VerifyHostname(value):
         raise argparse.ArgumentTypeError('Invalid {} domain.'.format(value))
     return value
 
-def checkDomainOrIP(value):
+#######################################################
+
+## Verify domain/ip ##
+
+def CheckDomainOrIP(value):
 	if not validators.domain(value) and not validators.ip_address.ipv4(value):
 		raise argparse.ArgumentTypeError('Invalid domain or ip address ({}).'.format(value))
 	return value
 
-###
+#######################################################
 
-def verifyHostname(value):
+## Get Domain ip address ##
+
+def VerifyHostname(value):
     try:
         ip = socket.gethostbyname(value)
         return ip
     except Exception as e:
         return False
 
-###
+#######################################################
 
-def whoisQuery(value):
+## Perform whois query ##
+
+def WhoisQuery(value):
     whoisData = collections.OrderedDict()
     whoisData["name"] = ["-", "Name:"]
     whoisData["org"] = ["-", "Organization:"]
@@ -112,7 +121,7 @@ def whoisQuery(value):
                 if rec is 'name_servers':
                     whoisData[rec][0] = []
                     for val in domain[rec]:
-                        whoisData[rec][0].append(val + ":" + verifyHostname(val))
+                        whoisData[rec][0].append(val + ":" + VerifyHostname(val))
                 else:
                     whoisData[rec][0] = []
                     for val in domain[rec]:
@@ -122,9 +131,11 @@ def whoisQuery(value):
 
     return whoisData
 
-###
+#######################################################
 
-def dnsQuery(value, dnsserver):
+## Perform DNS queries ##
+
+def DnsQuery(value, dnsserver):
 	dnsData = {
         "A":[],
         "CNAME":[],
@@ -147,10 +158,10 @@ def dnsQuery(value, dnsserver):
 			answers = myresolver.query(value, rec)
 			for answer in answers:
 				if rec is 'NS':
-					dnsData[rec].append(answer.to_text() + ":" + verifyHostname(answer.to_text()))
+					dnsData[rec].append(answer.to_text() + ":" + VerifyHostname(answer.to_text()))
 				elif rec is 'MX':
 					domain_name = re.search(' (.*)\.', answer.to_text(), re.IGNORECASE).group(1)
-					dnsData[rec].append(answer.to_text() + ":" + verifyHostname(domain_name))
+					dnsData[rec].append(answer.to_text() + ":" + VerifyHostname(domain_name))
 				else:
 					dnsData[rec].append(answer.to_text())
 		except Exception as e:
@@ -158,9 +169,11 @@ def dnsQuery(value, dnsserver):
 
 	return dnsData
 
-###
+#######################################################
 
-def tldQuery(value, dnsserver):
+## DNS TLD expansion lookup ##
+
+def TldQuery(value, dnsserver):
 	tldData = []
 
 	tlds = [
@@ -203,9 +216,11 @@ def tldQuery(value, dnsserver):
 
 	return tldData
 
-###
+#######################################################
 
-def reverseIPQuery(value, dnsserver):
+## IP DNS Reverse lookup ##
+
+def ReverseIPQuery(value, dnsserver):
 	try:
 		revname = reversename.from_address(value)
 		myresolver = dns.resolver.Resolver()
@@ -215,9 +230,11 @@ def reverseIPQuery(value, dnsserver):
 		print e
 		return ''
 
-###
+#######################################################
 
-def httpStatusQuery(value):
+## GET HTTP response status code and HTML title ##
+
+def HttpStatusQuery(value):
 
 	r = requests.get('http://{}'.format(value), verify=False)
 	title = ''
@@ -231,15 +248,17 @@ def httpStatusQuery(value):
 
 #######################################################
 
-def mainFunc():
+## Main Function ##
+
+def MainFunc():
 	print message
 	info = {}
 
 	parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 	parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain',
-                        default=None, type=checkDomain, help="Domain to search.", required=True)
+                        default=None, type=CheckDomain, help="Domain to search.", required=True)
 	parser.add_argument("-s", '--server', action="store", metavar='NAMESERVER', dest='dnsserver',
-                        default='8.8.8.8', type=checkDomainOrIP, help="DNS server to use.")
+                        default='8.8.8.8', type=CheckDomainOrIP, help="DNS server to use.")
 	parser.add_argument('-u', '--user-agent', action="store", metavar='USER-AGENT', dest='uagent',
                         default='GasMasK {}'.format(__version__), type=str, help="User Agent string to use.")
     #parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',
@@ -255,6 +274,8 @@ def mainFunc():
 
 #######################################################
 
+## information ##
+
 	dnsserver = args.dnsserver
 	print "[+] Using DNS server: " + dnsserver
 
@@ -264,16 +285,20 @@ def mainFunc():
 
 #######################################################
 
+## target ##
+
 	print "[+] Target:"
 	print "-----------"
-	info['ip'] = verifyHostname(info['domain'])
+	info['ip'] = VerifyHostname(info['domain'])
 	print info['domain'] + ":" + info['ip'] + "\n"
 
 #######################################################
 
+## Whois query ##
+
 	print "[+] Whois:"
 	print "----------"
-	info['whois'] = whoisQuery(info['domain'])
+	info['whois'] = WhoisQuery(info['domain'])
 	for key,value in info['whois'].iteritems():
 		if isinstance(value[0], list):
 			print
@@ -286,9 +311,11 @@ def mainFunc():
 
 #######################################################
 
+## DNS records ##
+
 	print "[+] DNS:"
 	print "--------"
-	info['dns'] = dnsQuery(info['domain'], dnsserver)
+	info['dns'] = DnsQuery(info['domain'], dnsserver)
 	for key,value in info['dns'].iteritems():
 		if(len(value) == 1):
 			print key + " DNS record: " + value[0]
@@ -302,11 +329,13 @@ def mainFunc():
 
 #######################################################
 
+## DNS TLD expansion lookup ##
+
 	print "[+] DNS TLD expansion:"
 	print "----------------------"
-	info['tld'] = tldQuery(info['domain'], dnsserver)
+	info['tld'] = TldQuery(info['domain'], dnsserver)
 	for val in info['tld']:
-		status_code, title = httpStatusQuery(val.split(':')[0])
+		status_code, title = HttpStatusQuery(val.split(':')[0])
 		if status_code == 200:
 			print val + ":" + "HTTP Status " + str(status_code) + ":" + "Title \"" + title + "\""
 		else:
@@ -315,9 +344,11 @@ def mainFunc():
 
 #######################################################
 
+## IP Reverse DNS lookup ##
+
 	print "[+] Reverse DNS Lookup:"
 	print "-----------------------"
-	info['revdns'] = reverseIPQuery(info['ip'], dnsserver)
+	info['revdns'] = ReverseIPQuery(info['ip'], dnsserver)
 	if info['revdns']:
 		print info['ip'] + ":" + info['revdns']
 	print
@@ -327,7 +358,7 @@ def mainFunc():
 if __name__ == '__main__':
 
 	try:
-		mainFunc()
+		MainFunc()
 	except KeyboardInterrupt:
 		print "Search interrupted by user.."
 	except:
