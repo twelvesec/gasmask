@@ -67,10 +67,10 @@ https://www.twelvesec.com/
 
 #######################################################
 
-## Validate Domain name and existence ##
+## Validate Domain name ##
 
 def CheckDomain(value):
-    if not validators.domain(value) or not VerifyHostname(value):
+    if not validators.domain(value):
         raise argparse.ArgumentTypeError('Invalid {} domain.'.format(value))
     return value
 
@@ -174,7 +174,7 @@ def DnsQuery(value, dnsserver):
 ## DNS TLD expansion lookup ##
 
 def TldQuery(value, dnsserver):
-	tldData = []
+	tldData = {}
 
 	tlds = [
             "ac", "academy", "ad", "ae", "aero", "af", "ag", "ai", "al", "am", "an", "ao", "aq", "ar", "arpa", "as",
@@ -209,8 +209,12 @@ def TldQuery(value, dnsserver):
 		try:
 			hostname = value.split('.')[0] + '.' + tld
 			answers = myresolver.query(hostname, 'A')
-			for answer in answers:
-				tldData.append(hostname + ":" + answer.to_text())
+			if answers:
+				tldData[hostname] = []
+				tldData[hostname].append(answers[0].to_text())
+				status_code, title = HttpStatusQuery(hostname)
+				tldData[hostname].append(status_code)
+				tldData[hostname].append(title)
 		except Exception as e:
 			pass
 
@@ -308,6 +312,7 @@ def MainFunc():
 			print
 		else:
 			print value[1] + " " + value[0]
+	print
 
 #######################################################
 
@@ -334,12 +339,11 @@ def MainFunc():
 	print "[+] DNS TLD expansion:"
 	print "----------------------"
 	info['tld'] = TldQuery(info['domain'], dnsserver)
-	for val in info['tld']:
-		status_code, title = HttpStatusQuery(val.split(':')[0])
-		if status_code == 200:
-			print val + ":" + "HTTP Status " + str(status_code) + ":" + "Title \"" + title + "\""
+	for key,val in info['tld'].iteritems():
+		if val[1] == 200:
+			print key + ":" + val[0] + ":" + "HTTP Status " + str(val[1]) + ":" + "Title \"" + val[2] + "\""
 		else:
-			print val + ":" + "HTTP Status " + str(status_code)
+			print key + ":" + val[0] + ":" + "HTTP Status " + str(val[1])
 	print
 
 #######################################################
