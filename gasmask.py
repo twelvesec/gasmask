@@ -44,6 +44,7 @@ import collections
 import re
 from dns import reversename, resolver
 import requests
+import time
 
 #######################################################
 
@@ -79,6 +80,7 @@ def CheckDomain(value):
 ## Verify domain/ip ##
 
 def CheckDomainOrIP(value):
+
 	if not validators.domain(value) and not validators.ip_address.ipv4(value):
 		raise argparse.ArgumentTypeError('Invalid domain or ip address ({}).'.format(value))
 	return value
@@ -88,6 +90,7 @@ def CheckDomainOrIP(value):
 ## Get Domain ip address ##
 
 def VerifyHostname(value):
+
     try:
         ip = socket.gethostbyname(value)
         return ip
@@ -99,6 +102,7 @@ def VerifyHostname(value):
 ## Perform whois query ##
 
 def WhoisQuery(value):
+
     whoisData = collections.OrderedDict()
     whoisData["name"] = ["-", "Name:"]
     whoisData["org"] = ["-", "Organization:"]
@@ -113,6 +117,7 @@ def WhoisQuery(value):
     whoisData["expiration_date"] = ["-", "Expiration Date:"]
     whoisData["creation_date"] = ["-", "Creation Date:"]
     whoisData["name_servers"] = ["-", "Name Servers:"]
+
     domain = whois.whois(value)
 
     for rec in whoisData:
@@ -136,6 +141,7 @@ def WhoisQuery(value):
 ## Perform DNS queries ##
 
 def DnsQuery(value, dnsserver):
+
 	dnsData = {
         "A":[],
         "CNAME":[],
@@ -174,6 +180,7 @@ def DnsQuery(value, dnsserver):
 ## DNS TLD expansion lookup ##
 
 def TldQuery(value, dnsserver):
+
 	tldData = {}
 
 	tlds = [
@@ -225,6 +232,7 @@ def TldQuery(value, dnsserver):
 ## IP DNS Reverse lookup ##
 
 def ReverseIPQuery(value, dnsserver):
+
 	try:
 		revname = reversename.from_address(value)
 		myresolver = dns.resolver.Resolver()
@@ -248,7 +256,88 @@ def HttpStatusQuery(value):
 			title = title.group().strip()
 		else:
 			title = ''
+
 	return r.status_code, title
+
+#######################################################
+
+## Clean HTML tags ##
+
+def CleanHTML(results):
+
+	res = results
+	res = re.sub('<em>', '', res)
+	res = re.sub('<b>', '', res)
+	res = re.sub('</b>', '', res)
+	res = re.sub('</em>', '', res)
+	res = re.sub('%2f', ' ', res)
+	res = re.sub('%3a', ' ', res)
+	res = re.sub('<strong>', '', res)
+	res = re.sub('</strong>', '', res)
+	res = re.sub('<wbr>', '', res)
+	res = re.sub('</wbr>', '', res)
+
+	return res
+
+#######################################################
+
+## Extract Emails ##
+
+def GetEmails(results, value):
+
+	res = results
+	res = CleanHTML(res)
+
+	temp = re.compile(
+	    '[a-zA-Z0-9.\-_+#~!$&\',;=:]+' +
+	    '@' +
+	    '[a-zA-Z0-9.-]*' +
+	    value)
+
+	emails = temp.findall(res)
+
+	return sorted(set(emails))
+
+#######################################################
+
+## Extract Hostnames ##
+
+def GetHostnames(results, value):
+
+	res = results
+	res = CleanHTML(res)
+
+	temp = re.compile('[a-zA-Z0-9.-]*\.' + value)
+
+	hostnames = temp.findall(res)
+
+	return sorted(set(hostnames))
+
+#######################################################
+
+## Google search ##
+
+def GoogleSearch(value):
+
+	server = "www.google.com"
+	quantity = 100
+	counter = 0
+	limit = 500
+	step = 100
+	results = ""
+
+	while counter <= limit:
+		try:
+			url = "https://" + server + "/search?num=" + str(quantity) + "&start=" + str(counter) + "&hl=en&meta=&q=%40\"" + value + "\""
+		 	r = requests.get(url)
+		except Exception,e:
+			print e
+
+		results += r.content
+		time.sleep(1)
+		counter += step
+
+	return GetEmails(results, value), GetHostnames(results, value)
 
 #######################################################
 
@@ -355,6 +444,23 @@ def MainFunc():
 	info['revdns'] = ReverseIPQuery(info['ip'], dnsserver)
 	if info['revdns']:
 		print info['ip'] + ":" + info['revdns']
+	print
+
+#######################################################
+
+## Google search results ##
+
+	print "[+] Google search:"
+	print "------------------"
+	info['googleemails'], info['googlehostnames'] = GoogleSearch(info['domain'])
+	print
+	print "Emails:"
+	for email in info['googleemails']:
+		print email
+	print
+	print "Hostnames:"
+	for host in info['googlehostnames']:
+		print host
 	print
 
 #######################################################
