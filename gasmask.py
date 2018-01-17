@@ -362,6 +362,32 @@ def GoogleSearch(value, useragent):
 
 #######################################################
 
+## Google search ##
+
+def BingSearch(value, useragent):
+
+	server = "www.bing.com"
+	quantity = 50
+	counter = 0
+	limit = 500
+	step = 50
+	results = ""
+
+	while counter <= limit:
+		try:
+			url = "https://" + server + "/search?q=%40" + value + "&count=" + str(quantity) + "&first=" + str(counter)
+		 	r = requests.get(url)
+		 	results += r.content
+		except Exception,e:
+			print e
+
+		time.sleep(1)
+		counter += step
+
+	return GetEmails(results, value), GetHostnames(results, value)
+
+#######################################################
+
 ## Bing Virtual Hosts ##
 
 def BingVHostsSearch(value, useragent):
@@ -375,7 +401,7 @@ def BingVHostsSearch(value, useragent):
 
 	while counter <= limit:
 		try:
-			url = "https://" + server + "/search?q=ip:" + value + "&go=&count=" + str(step) + "&FORM=QBHL&qs=n&first=" + str(counter)
+			url = "https://" + server + "/search?q=ip%3A" + value + "&go=&count=" + str(step) + "&FORM=QBHL&qs=n&first=" + str(counter)
 		 	r = requests.get(url)
 		 	results += r.content
 		except Exception,e:
@@ -526,6 +552,23 @@ def MainFunc():
 	print
 	print "Hostnames:"
 	for host in info['googlehostnames']:
+		print host
+	print
+
+#######################################################
+
+## Bing search results ##
+
+	print "[+] Bing search:"
+	print "------------------"
+	info['bingemails'], info['binghostnames'] = BingSearch(info['domain'], uagent)
+	print
+	print "Emails:"
+	for email in info['bingemails']:
+		print email
+	print
+	print "Hostnames:"
+	for host in info['binghostnames']:
 		print host
 	print
 
