@@ -250,6 +250,7 @@ def HttpStatusQuery(value):
 
 	r = requests.get('http://{}'.format(value), verify=False)
 	title = ''
+
 	if r.status_code == 200:
 		title = re.search('(?<=<title>).+?(?=</title>)', r.text, re.DOTALL)
 		if title:
@@ -308,16 +309,36 @@ def GetHostnames(results, value):
 	res = CleanHTML(res)
 
 	temp = re.compile('[a-zA-Z0-9.-]*\.' + value)
-
 	hostnames = temp.findall(res)
 
 	return sorted(set(hostnames))
 
 #######################################################
 
+## Get All Hostnames ##
+
+def GetHostnamesAll(results):
+
+	res = results
+	temp = re.compile('<cite>(.*?)</cite>')
+	hostname = temp.findall(res)
+	vhosts = []
+
+	for x in hostname:
+		r = ''
+		if x.count(':'):
+			r = x.split(':')[1].split('/')[2]
+		else:
+			r = x.split("/")[0]
+		vhosts.append(r)
+
+	return sorted(set(vhosts))
+
+#######################################################
+
 ## Google search ##
 
-def GoogleSearch(value):
+def GoogleSearch(value, useragent):
 
 	server = "www.google.com"
 	quantity = 100
@@ -330,14 +351,48 @@ def GoogleSearch(value):
 		try:
 			url = "https://" + server + "/search?num=" + str(quantity) + "&start=" + str(counter) + "&hl=en&meta=&q=%40\"" + value + "\""
 		 	r = requests.get(url)
+		 	results += r.content
 		except Exception,e:
 			print e
 
-		results += r.content
 		time.sleep(1)
 		counter += step
 
 	return GetEmails(results, value), GetHostnames(results, value)
+
+#######################################################
+
+## Bing Virtual Hosts ##
+
+def BingVHostsSearch(value, useragent):
+
+	server = "www.bing.com"
+	limit = 500
+	step = 50
+	counter = 0
+	results = ""
+	vhosts = []
+
+	while counter <= limit:
+		try:
+			url = "https://" + server + "/search?q=ip:" + value + "&go=&count=" + str(step) + "&FORM=QBHL&qs=n&first=" + str(counter)
+		 	r = requests.get(url)
+		 	results += r.content
+		except Exception,e:
+			print e
+
+		time.sleep(1)
+		counter += step
+
+	all_hostnames = GetHostnamesAll(results)
+
+	for x in all_hostnames:
+		x = re.sub(r'[[\<\/?]*[\w]*>]*','',x)
+		x = re.sub('<','',x)
+		x = re.sub('>','',x)
+		vhosts.append(x)
+
+	return sorted(set(vhosts))
 
 #######################################################
 
@@ -362,7 +417,6 @@ def MainFunc():
 		sys.exit()
 
 	args = parser.parse_args()
-
 	info['domain'] = args.domain
 
 #######################################################
@@ -448,11 +502,23 @@ def MainFunc():
 
 #######################################################
 
+## Bing Virtual Hosts search results ##
+
+	print "[+] Bing Virtual Hosts:"
+	print "-----------------------"
+	info['bingvhosts'] = BingVHostsSearch(info['ip'], uagent)
+	print
+	for host in info['bingvhosts']:
+		print host
+	print
+
+#######################################################
+
 ## Google search results ##
 
 	print "[+] Google search:"
 	print "------------------"
-	info['googleemails'], info['googlehostnames'] = GoogleSearch(info['domain'])
+	info['googleemails'], info['googlehostnames'] = GoogleSearch(info['domain'], uagent)
 	print
 	print "Emails:"
 	for email in info['googleemails']:
