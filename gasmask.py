@@ -177,58 +177,6 @@ def DnsQuery(value, dnsserver):
 
 #######################################################
 
-## DNS TLD expansion lookup ##
-
-def TldQuery(value, dnsserver):
-
-	tldData = {}
-
-	tlds = [
-            "ac", "academy", "ad", "ae", "aero", "af", "ag", "ai", "al", "am", "an", "ao", "aq", "ar", "arpa", "as",
-            "asia", "at", "au", "aw", "ax", "az", "ba", "bb", "bd", "be", "bf", "bg", "bh", "bi", "bike", "biz", "bj",
-            "bm", "bn", "bo", "br", "bs", "bt", "builders", "buzz", "bv", "bw", "by", "bz", "ca", "cab", "camera",
-            "camp", "careers", "cat", "cc", "cd", "center", "ceo", "cf", "cg", "ch", "ci", "ck", "cl", "clothing",
-            "cm", "cn", "co", "codes", "coffee", "com", "company", "computer", "construction", "contractors", "coop",
-            "cr", "cu", "cv", "cw", "cx", "cy", "cz", "de", "diamonds", "directory", "dj", "dk", "dm", "do",
-            "domains", "dz", "ec", "edu", "education", "ee", "eg", "email", "enterprises", "equipment", "er", "es",
-            "estate", "et", "eu", "farm", "fi", "fj", "fk", "florist", "fm", "fo", "fr", "ga", "gallery", "gb", "gd",
-            "ge", "gf", "gg", "gh", "gi", "gl", "glass", "gm", "gn", "gov", "gp", "gq", "gr", "graphics", "gs", "gt",
-            "gu", "guru", "gw", "gy", "hk", "hm", "hn", "holdings", "holiday", "house", "hr", "ht", "hu", "id", "ie",
-            "il", "im", "immobilien", "in", "info", "institute", "int", "international", "io", "iq", "ir", "is", "it",
-            "je", "jm", "jo", "jobs", "jp", "kaufen", "ke", "kg", "kh", "ki", "kitchen", "kiwi", "km", "kn", "kp",
-            "kr", "kw", "ky", "kz", "la", "land", "lb", "lc", "li", "lighting", "limo", "lk", "lr", "ls", "lt", "lu",
-            "lv", "ly", "ma", "management", "mc", "md", "me", "menu", "mg", "mh", "mil", "mk", "ml", "mm", "mn", "mo",
-            "mobi", "mp", "mq", "mr", "ms", "mt", "mu", "museum", "mv", "mw", "mx", "my", "mz", "na", "name", "nc",
-            "ne", "net", "nf", "ng", "ni", "ninja", "nl", "no", "np", "nr", "nu", "nz", "om", "onl", "org", "pa", "pe",
-            "pf", "pg", "ph", "photography", "photos", "pk", "pl", "plumbing", "pm", "pn", "post", "pr", "pro", "ps",
-            "pt", "pw", "py", "qa", "re", "recipes", "repair", "ro", "rs", "ru", "ruhr", "rw", "sa", "sb", "sc", "sd",
-            "se", "sexy", "sg", "sh", "shoes", "si", "singles", "sj", "sk", "sl", "sm", "sn", "so", "solar",
-            "solutions", "sr", "st", "su", "support", "sv", "sx", "sy", "systems", "sz", "tattoo", "tc", "td",
-            "technology", "tel", "tf", "tg", "th", "tips", "tj", "tk", "tl", "tm", "tn", "to", "today", "tp", "tr",
-            "training", "travel", "tt", "tv", "tw", "tz", "ua", "ug", "uk", "uno", "us", "uy", "uz", "va", "vc",
-            "ve", "ventures", "vg", "vi", "viajes", "vn", "voyage", "vu", "wang", "wf", "wien", "ws", "xxx", "ye",
-            "yt", "za", "zm", "zw"]
-
-	myresolver = dns.resolver.Resolver()
-	myresolver.nameservers = [dnsserver]
-
-	for tld in tlds:
-		try:
-			hostname = value.split('.')[0] + '.' + tld
-			answers = myresolver.query(hostname, 'A')
-			if answers:
-				tldData[hostname] = []
-				tldData[hostname].append(answers[0].to_text())
-				status_code, title = HttpStatusQuery(hostname)
-				tldData[hostname].append(status_code)
-				tldData[hostname].append(title)
-		except Exception as e:
-			pass
-
-	return tldData
-
-#######################################################
-
 ## IP DNS Reverse lookup ##
 
 def ReverseIPQuery(value, dnsserver):
@@ -296,8 +244,11 @@ def GetEmails(results, value):
 	    value)
 
 	emails = temp.findall(res)
+	final = []
+	for email in emails:
+		final.append(email.lower())
 
-	return sorted(set(emails))
+	return sorted(set(final))
 
 #######################################################
 
@@ -310,8 +261,11 @@ def GetHostnames(results, value):
 
 	temp = re.compile('[a-zA-Z0-9.-]*\.' + value)
 	hostnames = temp.findall(res)
+	final = []
+	for host in hostnames:
+		final.append(host.lower())
 
-	return sorted(set(hostnames))
+	return sorted(set(final))
 
 #######################################################
 
@@ -338,18 +292,17 @@ def GetHostnamesAll(results):
 
 ## Google search ##
 
-def GoogleSearch(value, useragent):
+def GoogleSearch(value, useragent, limit):
 
 	server = "www.google.com"
 	quantity = 100
 	counter = 0
-	limit = 500
 	step = 100
 	results = ""
 
 	while counter <= limit:
 		try:
-			url = "https://" + server + "/search?num=" + str(quantity) + "&start=" + str(counter) + "&hl=en&meta=&q=%40\"" + value + "\""
+			url = "https://" + server + "/search?num=" + str(quantity) + "&start=" + str(counter) + "&hl=en&meta=&q=%40%22" + value + "%22"
 		 	r = requests.get(url)
 		 	results += r.content
 		except Exception,e:
@@ -362,14 +315,13 @@ def GoogleSearch(value, useragent):
 
 #######################################################
 
-## Google search ##
+## Bing search ##
 
-def BingSearch(value, useragent):
+def BingSearch(value, useragent, limit):
 
 	server = "www.bing.com"
 	quantity = 50
 	counter = 0
-	limit = 500
 	step = 50
 	results = ""
 
@@ -388,12 +340,60 @@ def BingSearch(value, useragent):
 
 #######################################################
 
+## ASK search ##
+
+def AskSearch(value, useragent):
+
+	server = "www.ask.com"
+	limit = 5
+	step = 1
+	page = 1
+	results = ""
+
+	while page <= limit:
+		try:
+			url = "https://" + server + "/web?q=%40%22" + value + "%22&page=" + str(page)
+		 	r = requests.get(url)
+		 	results += r.content
+		except Exception,e:
+			print e
+
+		time.sleep(1)
+		page += step
+
+	return GetEmails(results, value), GetHostnames(results, value)
+
+#######################################################
+
+## Dogpile search ##
+
+def DogpileSearch(value, useragent, limit):
+
+	server = "www.dogpile.com"
+	step = 15
+	counter = 1
+	results = ""
+
+	while counter <= limit:
+		try:
+			url = "https://" + server + "/search/web?qsi=" + str(counter) + "&q=%40" + value
+		 	r = requests.get(url, verify=False)
+		 	results += r.content
+		except Exception,e:
+			print e
+
+		time.sleep(1)
+		counter += step
+
+	return GetEmails(results, value), GetHostnames(results, value)
+
+#######################################################
+
 ## Bing Virtual Hosts ##
 
-def BingVHostsSearch(value, useragent):
+def BingVHostsSearch(value, useragent, limit):
 
 	server = "www.bing.com"
-	limit = 500
 	step = 50
 	counter = 0
 	results = ""
@@ -427,6 +427,9 @@ def BingVHostsSearch(value, useragent):
 def MainFunc():
 	print message
 	info = {}
+	all_emails = []
+	all_hosts = []
+	limit = 500
 
 	parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 	parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain',
@@ -503,20 +506,6 @@ def MainFunc():
 
 #######################################################
 
-## DNS TLD expansion lookup ##
-
-	print "[+] DNS TLD expansion:"
-	print "----------------------"
-	info['tld'] = TldQuery(info['domain'], dnsserver)
-	for key,val in info['tld'].iteritems():
-		if val[1] == 200:
-			print key + ":" + val[0] + ":" + "HTTP Status " + str(val[1]) + ":" + "Title \"" + val[2] + "\""
-		else:
-			print key + ":" + val[0] + ":" + "HTTP Status " + str(val[1])
-	print
-
-#######################################################
-
 ## IP Reverse DNS lookup ##
 
 	print "[+] Reverse DNS Lookup:"
@@ -532,7 +521,7 @@ def MainFunc():
 
 	print "[+] Bing Virtual Hosts:"
 	print "-----------------------"
-	info['bingvhosts'] = BingVHostsSearch(info['ip'], uagent)
+	info['bingvhosts'] = BingVHostsSearch(info['ip'], uagent, limit)
 	print
 	for host in info['bingvhosts']:
 		print host
@@ -544,7 +533,9 @@ def MainFunc():
 
 	print "[+] Google search:"
 	print "------------------"
-	info['googleemails'], info['googlehostnames'] = GoogleSearch(info['domain'], uagent)
+	info['googleemails'], info['googlehostnames'] = GoogleSearch(info['domain'], uagent, limit)
+	all_emails.extend(info['googleemails'])
+	all_hosts.extend(info['googlehostnames'])
 	print
 	print "Emails:"
 	for email in info['googleemails']:
@@ -560,8 +551,10 @@ def MainFunc():
 ## Bing search results ##
 
 	print "[+] Bing search:"
-	print "------------------"
-	info['bingemails'], info['binghostnames'] = BingSearch(info['domain'], uagent)
+	print "----------------"
+	info['bingemails'], info['binghostnames'] = BingSearch(info['domain'], uagent, limit)
+	all_emails.extend(info['bingemails'])
+	all_hosts.extend(info['binghostnames'])
 	print
 	print "Emails:"
 	for email in info['bingemails']:
@@ -569,6 +562,62 @@ def MainFunc():
 	print
 	print "Hostnames:"
 	for host in info['binghostnames']:
+		print host
+	print
+
+#######################################################
+
+## ASK search results ##
+
+	print "[+] ASK search:"
+	print "---------------"
+	info['askemails'], info['askhostnames'] = AskSearch(info['domain'], uagent)
+	all_emails.extend(info['askemails'])
+	all_hosts.extend(info['askhostnames'])
+	print
+	print "Emails:"
+	for email in info['askemails']:
+		print email
+	print
+	print "Hostnames:"
+	for host in info['askhostnames']:
+		print host
+	print
+
+#######################################################
+
+## Dogpile search results ##
+
+	print "[+] Dogpile search:"
+	print "-------------------"
+	info['dogpileemails'], info['dogpilehostnames'] = DogpileSearch(info['domain'], uagent, limit)
+	all_emails.extend(info['dogpileemails'])
+	all_hosts.extend(info['dogpilehostnames'])
+	print
+	print "Emails:"
+	for email in info['dogpileemails']:
+		print email
+	print
+	print "Hostnames:"
+	for host in info['dogpilehostnames']:
+		print host
+	print
+
+#######################################################
+
+## Search Results Final Report ##
+
+	print "[+] Search Results - Final Report:"
+	print "-------------------"
+	all_emails = sorted(set(all_emails))
+	all_hosts = sorted(set(all_hosts))
+	print
+	print "Emails:"
+	for email in all_emails:
+		print email
+	print
+	print "Hostnames:"
+	for host in all_hosts:
 		print host
 	print
 
