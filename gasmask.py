@@ -583,114 +583,54 @@ def MainFunc():
 ## Google search results ##
 
 	print "[+] Searching in Google.."
-	# print "------------------"
 	info['googleemails'], info['googlehostnames'] = GoogleSearch(info['domain'], uagent, limit)
 	all_emails.extend(info['googleemails'])
 	all_hosts.extend(info['googlehostnames'])
-	# print
-	# print "Emails:"
-	# for email in info['googleemails']:
-	# 	print email
-	# print
-	# print "Hostnames:"
-	# for host in info['googlehostnames']:
-	# 	print host
-	# print
 
 #######################################################
 
 ## Bing search results ##
 
 	print "[+] Searching in Bing.."
-	# print "----------------"
 	info['bingemails'], info['binghostnames'] = BingSearch(info['domain'], uagent, limit)
 	all_emails.extend(info['bingemails'])
 	all_hosts.extend(info['binghostnames'])
-	# print
-	# print "Emails:"
-	# for email in info['bingemails']:
-	# 	print email
-	# print
-	# print "Hostnames:"
-	# for host in info['binghostnames']:
-	# 	print host
-	# print
 
 #######################################################
 
 ## Yahoo search results ##
 
 	print "[+] Searching in Yahoo.."
-	# print "-------------------"
 	info['yahooemails'], info['yahoohostnames'] = YahooSearch(info['domain'], uagent, limit)
 	all_emails.extend(info['yahooemails'])
 	all_hosts.extend(info['yahoohostnames'])
-	# print
-	# print "Emails:"
-	# for email in info['yahooemails']:
-	# 	print email
-	# print
-	# print "Hostnames:"
-	# for host in info['yahoohostnames']:
-	# 	print host
-	# print
 
 #######################################################
 
 ## ASK search results ##
 
 	print "[+] Searching in ASK.."
-	# print "---------------"
 	info['askemails'], info['askhostnames'] = AskSearch(info['domain'], uagent)
 	all_emails.extend(info['askemails'])
 	all_hosts.extend(info['askhostnames'])
-	# print
-	# print "Emails:"
-	# for email in info['askemails']:
-	# 	print email
-	# print
-	# print "Hostnames:"
-	# for host in info['askhostnames']:
-	# 	print host
-	# print
 
 #######################################################
 
 ## Dogpile search results ##
 
 	print "[+] Searching in Dogpile.."
-	# print "-------------------"
 	info['dogpileemails'], info['dogpilehostnames'] = DogpileSearch(info['domain'], uagent, limit)
 	all_emails.extend(info['dogpileemails'])
 	all_hosts.extend(info['dogpilehostnames'])
-	# print
-	# print "Emails:"
-	# for email in info['dogpileemails']:
-	# 	print email
-	# print
-	# print "Hostnames:"
-	# for host in info['dogpilehostnames']:
-	# 	print host
-	# print
 
 #######################################################
 
 ## Yandex search results ##
 
 	print "[+] Searching in Yandex.."
-	# print "-------------------"
 	info['yandexemails'], info['yandexhostnames'] = YandexSearch(info['domain'], uagent, limit)
 	all_emails.extend(info['yandexemails'])
 	all_hosts.extend(info['yandexhostnames'])
-	# print
-	# print "Emails:"
-	# for email in info['yandexemails']:
-	# 	print email
-	# print
-	# print "Hostnames:"
-	# for host in info['yandexhostnames']:
-	# 	print host
-	# print
 
 #######################################################
 
@@ -698,7 +638,7 @@ def MainFunc():
 
 	print
 	print "[+] Search engines Results - Final Report:"
-	print "-------------------"
+	print "------------------------------------------"
 	all_emails = sorted(set(all_emails))
 	all_hosts = sorted(set(all_hosts))
 	print
