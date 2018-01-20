@@ -192,24 +192,6 @@ def ReverseIPQuery(value, dnsserver):
 
 #######################################################
 
-## GET HTTP response status code and HTML title ##
-
-def HttpStatusQuery(value):
-
-	r = requests.get('http://{}'.format(value), verify=False)
-	title = ''
-
-	if r.status_code == 200:
-		title = re.search('(?<=<title>).+?(?=</title>)', r.text, re.DOTALL)
-		if title:
-			title = title.group().strip()
-		else:
-			title = ''
-
-	return r.status_code, title
-
-#######################################################
-
 ## Clean HTML tags ##
 
 def CleanHTML(results):
@@ -292,7 +274,7 @@ def GetHostnamesAll(results):
 
 ## Google search ##
 
-def GoogleSearch(value, useragent, limit):
+def GoogleSearch(value, useragent, limit, proxies):
 
 	server = "www.google.com"
 	quantity = 100
@@ -303,7 +285,7 @@ def GoogleSearch(value, useragent, limit):
 	while counter <= limit:
 		try:
 			url = "https://" + server + "/search?num=" + str(quantity) + "&start=" + str(counter) + "&hl=en&meta=&q=%40%22" + value + "%22"
-		 	r = requests.get(url, headers={'User-Agent': useragent})
+		 	r = requests.get(url, verify=False, headers={'User-Agent': useragent}, proxies=proxies)
 		 	results += r.content
 		except Exception,e:
 			print e
@@ -317,7 +299,7 @@ def GoogleSearch(value, useragent, limit):
 
 ## Bing search ##
 
-def BingSearch(value, useragent, limit):
+def BingSearch(value, useragent, limit, proxies):
 
 	server = "www.bing.com"
 	quantity = 50
@@ -328,7 +310,7 @@ def BingSearch(value, useragent, limit):
 	while counter <= limit:
 		try:
 			url = "https://" + server + "/search?q=%40" + value + "&count=" + str(quantity) + "&first=" + str(counter)
-		 	r = requests.get(url, headers={'User-Agent': useragent})
+		 	r = requests.get(url, verify=False, headers={'User-Agent': useragent}, proxies=proxies)
 		 	results += r.content
 		except Exception,e:
 			print e
@@ -342,7 +324,7 @@ def BingSearch(value, useragent, limit):
 
 ## ASK search ##
 
-def AskSearch(value, useragent):
+def AskSearch(value, useragent, proxies):
 
 	server = "www.ask.com"
 	limit = 5
@@ -353,7 +335,7 @@ def AskSearch(value, useragent):
 	while page <= limit:
 		try:
 			url = "https://" + server + "/web?q=%40%22" + value + "%22&page=" + str(page)
-		 	r = requests.get(url, headers={'User-Agent': useragent})
+		 	r = requests.get(url, verify=False, headers={'User-Agent': useragent}, proxies=proxies)
 		 	results += r.content
 		except Exception,e:
 			print e
@@ -367,7 +349,7 @@ def AskSearch(value, useragent):
 
 ## Dogpile search ##
 
-def DogpileSearch(value, useragent, limit):
+def DogpileSearch(value, useragent, limit, proxies):
 
 	server = "www.dogpile.com"
 	step = 15
@@ -377,7 +359,7 @@ def DogpileSearch(value, useragent, limit):
 	while counter <= limit:
 		try:
 			url = "https://" + server + "/search/web?qsi=" + str(counter) + "&q=%40" + value
-		 	r = requests.get(url, verify=False, headers={'User-Agent': useragent})
+		 	r = requests.get(url, verify=False, headers={'User-Agent': useragent}, proxies=proxies)
 		 	results += r.content
 		except Exception,e:
 			print e
@@ -391,7 +373,7 @@ def DogpileSearch(value, useragent, limit):
 
 ## Yahoo search ##
 
-def YahooSearch(value, useragent, limit):
+def YahooSearch(value, useragent, limit, proxies):
 
 	server = "search.yahoo.com"
 	step = 10
@@ -401,7 +383,7 @@ def YahooSearch(value, useragent, limit):
 	while counter <= limit:
 		try:
 			url = "https://" + server + "/search?p=%40" + value + "&b=" + str(counter) + "&pz=10"
-		 	r = requests.get(url, headers={'User-Agent': useragent})
+		 	r = requests.get(url, verify=False, headers={'User-Agent': useragent}, proxies=proxies)
 		 	results += r.content
 		except Exception,e:
 			print e
@@ -415,7 +397,7 @@ def YahooSearch(value, useragent, limit):
 
 ## Bing search ##
 
-def YandexSearch(value, useragent, limit):
+def YandexSearch(value, useragent, limit, proxies):
 
 	server = "yandex.com"
 	quantity = 50
@@ -427,7 +409,7 @@ def YandexSearch(value, useragent, limit):
 	while counter <= limit:
 		try:
 			url = "https://" + server + "/search/?text=%22%40" + value + "%22&numdoc=" + str(quantity) + "&p=" + str(page) + "&lr=10418"
-		 	r = requests.get(url, headers={'User-Agent': useragent})
+		 	r = requests.get(url, verify=False, headers={'User-Agent': useragent}, proxies=proxies)
 		 	results += r.content
 		except Exception,e:
 			print e
@@ -440,9 +422,9 @@ def YandexSearch(value, useragent, limit):
 
 #######################################################
 
-## LinkedIn + Google search ##
+## site: + Google search ##
 
-def LinkedInSearch(value, useragent, limit):
+def SiteSearch(value, site, useragent, limit, proxies):
 
 	server = "www.google.com"
 	quantity = 100
@@ -452,9 +434,21 @@ def LinkedInSearch(value, useragent, limit):
 
 	while counter <= limit:
 		try:
-			url = "https://" + server + "/search?num=" + str(quantity) + "&start=" + str(counter) + "&hl=en&meta=&q=site%3Alinkedin.com%20%40%22" + value + "%22"
-		 	r = requests.get(url, headers={'User-Agent': useragent})
+			url = "https://" + server + "/search?num=" + str(quantity) + "&start=" + str(counter) + "&hl=en&meta=&q=site%3A" + site + "%20%40%22" + value + "%22"
+			r = requests.get(url, verify=False, headers={'User-Agent': useragent}, proxies=proxies)
 		 	results += r.content
+			# s = requests.Session()
+			# s.headers.update({'Host': server})
+			# s.headers.update({'User-Agent': useragent})
+			# s.headers.update({'Accept': '*/*'})
+			# s.headers.update({'Accept-Language': 'en-US,en;q=0.5'})
+			# s.headers.update({'Accept-Encoding': 'gzip, deflate'})
+			# s.headers.update({'Connection': 'close'})
+			# r = s.get("https://" + server, verify=False, proxies=proxies)
+			# s.headers.update({'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'})
+			# s.headers.update({'Referer': "https://"+ server + "/"})
+		 	# r = s.get(url, verify=False, proxies=proxies)
+		 	# results += r.content
 		except Exception,e:
 			print e
 
@@ -467,7 +461,7 @@ def LinkedInSearch(value, useragent, limit):
 
 ## Bing Virtual Hosts ##
 
-def BingVHostsSearch(value, useragent, limit):
+def BingVHostsSearch(value, useragent, limit, proxies):
 
 	server = "www.bing.com"
 	step = 50
@@ -478,7 +472,7 @@ def BingVHostsSearch(value, useragent, limit):
 	while counter <= limit:
 		try:
 			url = "https://" + server + "/search?q=ip%3A" + value + "&go=&count=" + str(step) + "&FORM=QBHL&qs=n&first=" + str(counter)
-		 	r = requests.get(url, headers={'User-Agent': useragent})
+		 	r = requests.get(url, verify=False, headers={'User-Agent': useragent}, proxies=proxies)
 		 	results += r.content
 		except Exception,e:
 			print e
@@ -505,28 +499,41 @@ def MainFunc():
 	info = {}
 	all_emails = []
 	all_hosts = []
-	limit = 500
 
 	parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
+
 	parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain',
-                        default=None, type=CheckDomain, help="Domain to search.", required=True)
+		default=None, type=CheckDomain, help="Domain to search.", required=True)
 	parser.add_argument("-s", '--server', action="store", metavar='NAMESERVER', dest='dnsserver',
-                        default='8.8.8.8', type=CheckDomainOrIP, help="DNS server to use.")
+		default='8.8.8.8', type=CheckDomainOrIP, help="DNS server to use.")
 	parser.add_argument('-u', '--user-agent', action="store", metavar='USER-AGENT', dest='uagent',
-                        default='GasMasK {}'.format(__version__), type=str, help="User Agent string to use.")
+		default='Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:57.0) Gecko/20100101 Firefox/57.0',
+		type=str, help="User Agent string to use.")
+	parser.add_argument('-x', '--proxy', action="store", metavar='PROXY', dest='proxy',
+		default=None, type=str, help="Use a proxy server when retrieving results from search engines (eg. '-x http://127.0.0.1:8080')")
+	parser.add_argument("-l", '--limit', action="store", metavar='LIMIT', dest='limit',
+		type=int, default=100, help="Limit the number of search engine results.")
+
     #parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',
     #                    type=str, default=None, help='Output in the four major formats at once.')
+
+    # alternative user-agent: GasMasK {}
 
 	if len(sys.argv) is 1:
 		parser.print_help()
 		sys.exit()
 
 	args = parser.parse_args()
+
 	info['domain'] = args.domain
+	proxies = {}
 
 #######################################################
 
 ## information ##
+
+	limit = args.limit
+	print "[+] Limit search engine results to: " + str(limit)
 
 	dnsserver = args.dnsserver
 	print "[+] Using DNS server: " + dnsserver
@@ -534,6 +541,14 @@ def MainFunc():
 	uagent = args.uagent
 	print "[+] Using User Agent string: " + uagent
 	print
+
+	if args.proxy:
+		proxies = {
+		      'http': args.proxy,
+		      'https': args.proxy,
+		  }
+		print "[+] Using Proxy server: " + args.proxy
+		print
 
 #######################################################
 
@@ -546,7 +561,7 @@ def MainFunc():
 
 #######################################################
 
-## Whois query ##
+## Whois query report ##
 
 	print "[+] Whois lookup:"
 	print "-----------------"
@@ -564,7 +579,7 @@ def MainFunc():
 
 #######################################################
 
-## DNS records ##
+## DNS records report ##
 
 	print "[+] DNS queries:"
 	print "----------------"
@@ -582,7 +597,7 @@ def MainFunc():
 
 #######################################################
 
-## IP Reverse DNS lookup ##
+## IP Reverse DNS lookup report ##
 
 	print "[+] Reverse DNS Lookup:"
 	print "-----------------------"
@@ -593,11 +608,11 @@ def MainFunc():
 
 #######################################################
 
-## Bing Virtual Hosts search results ##
+## Bing Virtual Hosts search results report ##
 
 	print "[+] Bing Virtual Hosts:"
 	print "-----------------------"
-	info['bingvhosts'] = BingVHostsSearch(info['ip'], uagent, limit)
+	info['bingvhosts'] = BingVHostsSearch(info['ip'], uagent, limit, proxies)
 	print
 	for host in info['bingvhosts']:
 		print host
@@ -605,66 +620,120 @@ def MainFunc():
 
 #######################################################
 
-## Google search results ##
+## Google search ##
 
 	print "[+] Searching in Google.."
-	info['googleemails'], info['googlehostnames'] = GoogleSearch(info['domain'], uagent, limit)
+	info['googleemails'], info['googlehostnames'] = GoogleSearch(info['domain'], uagent, limit, proxies)
 	all_emails.extend(info['googleemails'])
 	all_hosts.extend(info['googlehostnames'])
 
 #######################################################
 
-## Bing search results ##
+## Bing search ##
 
 	print "[+] Searching in Bing.."
-	info['bingemails'], info['binghostnames'] = BingSearch(info['domain'], uagent, limit)
+	info['bingemails'], info['binghostnames'] = BingSearch(info['domain'], uagent, limit, proxies)
 	all_emails.extend(info['bingemails'])
 	all_hosts.extend(info['binghostnames'])
 
 #######################################################
 
-## Yahoo search results ##
+## Yahoo search ##
 
 	print "[+] Searching in Yahoo.."
-	info['yahooemails'], info['yahoohostnames'] = YahooSearch(info['domain'], uagent, limit)
+	info['yahooemails'], info['yahoohostnames'] = YahooSearch(info['domain'], uagent, limit, proxies)
 	all_emails.extend(info['yahooemails'])
 	all_hosts.extend(info['yahoohostnames'])
 
 #######################################################
 
-## ASK search results ##
+## ASK search ##
 
 	print "[+] Searching in ASK.."
-	info['askemails'], info['askhostnames'] = AskSearch(info['domain'], uagent)
+	info['askemails'], info['askhostnames'] = AskSearch(info['domain'], uagent, proxies)
 	all_emails.extend(info['askemails'])
 	all_hosts.extend(info['askhostnames'])
 
 #######################################################
 
-## Dogpile search results ##
+## Dogpile search ##
 
 	print "[+] Searching in Dogpile.."
-	info['dogpileemails'], info['dogpilehostnames'] = DogpileSearch(info['domain'], uagent, limit)
+	info['dogpileemails'], info['dogpilehostnames'] = DogpileSearch(info['domain'], uagent, limit, proxies)
 	all_emails.extend(info['dogpileemails'])
 	all_hosts.extend(info['dogpilehostnames'])
 
 #######################################################
 
-## Yandex search results ##
+## Yandex search ##
 
 	print "[+] Searching in Yandex.."
-	info['yandexemails'], info['yandexhostnames'] = YandexSearch(info['domain'], uagent, limit)
+	info['yandexemails'], info['yandexhostnames'] = YandexSearch(info['domain'], uagent, limit, proxies)
 	all_emails.extend(info['yandexemails'])
 	all_hosts.extend(info['yandexhostnames'])
 
 #######################################################
 
-## LinkedIn search results ##
+## LinkedIn search ##
 
 	print "[+] Searching in LinkedIn.."
-	info['linkedinemails'], info['linkedinhostnames'] = LinkedInSearch(info['domain'], uagent, limit)
+	info['linkedinemails'], info['linkedinhostnames'] = SiteSearch(info['domain'], 'linkedin.com', uagent, limit, proxies)
 	all_emails.extend(info['linkedinemails'])
 	all_hosts.extend(info['linkedinhostnames'])
+
+#######################################################
+
+## Twitter search ##
+
+	print "[+] Searching in Twitter.."
+	info['twitteremails'], info['twitterhostnames'] = SiteSearch(info['domain'], "twitter.com", uagent, limit, proxies)
+	all_emails.extend(info['twitteremails'])
+	all_hosts.extend(info['twitterhostnames'])
+
+#######################################################
+
+## Google+ search ##
+
+	print "[+] Searching in Google+.."
+	info['googleplusemails'], info['googleplushostnames'] = SiteSearch(info['domain'], "plus.google.com", uagent, limit, proxies)
+	all_emails.extend(info['googleplusemails'])
+	all_hosts.extend(info['googleplushostnames'])
+
+#######################################################
+
+## Youtube search ##
+
+	print "[+] Searching in Youtube.."
+	info['youtubeemails'], info['youtubehostnames'] = SiteSearch(info['domain'], "youtube.com", uagent, limit, proxies)
+	all_emails.extend(info['youtubeemails'])
+	all_hosts.extend(info['youtubehostnames'])
+
+#######################################################
+
+## Reddit search ##
+
+	print "[+] Searching in Reddit.."
+	info['redditemails'], info['reddithostnames'] = SiteSearch(info['domain'], "reddit.com", uagent, limit, proxies)
+	all_emails.extend(info['redditemails'])
+	all_hosts.extend(info['reddithostnames'])
+
+#######################################################
+
+## Github search ##
+
+	print "[+] Searching in Github.."
+	info['githubemails'], info['githubhostnames'] = SiteSearch(info['domain'], "github.com", uagent, limit, proxies)
+	all_emails.extend(info['githubemails'])
+	all_hosts.extend(info['githubhostnames'])
+
+#######################################################
+
+## Instagram search ##
+
+	print "[+] Searching in Instagram.."
+	info['instagramemails'], info['instagramhostnames'] = SiteSearch(info['domain'], "instagram.com", uagent, limit, proxies)
+	all_emails.extend(info['instagramemails'])
+	all_hosts.extend(info['instagramhostnames'])
 
 #######################################################
 
