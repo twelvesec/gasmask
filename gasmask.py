@@ -440,6 +440,31 @@ def YandexSearch(value, useragent, limit):
 
 #######################################################
 
+## LinkedIn + Google search ##
+
+def LinkedInSearch(value, useragent, limit):
+
+	server = "www.google.com"
+	quantity = 100
+	counter = 0
+	step = 100
+	results = ""
+
+	while counter <= limit:
+		try:
+			url = "https://" + server + "/search?num=" + str(quantity) + "&start=" + str(counter) + "&hl=en&meta=&q=site%3Alinkedin.com%20%40%22" + value + "%22"
+		 	r = requests.get(url, headers={'User-Agent': useragent})
+		 	results += r.content
+		except Exception,e:
+			print e
+
+		time.sleep(1)
+		counter += step
+
+	return GetEmails(results, value), GetHostnames(results, value)
+
+#######################################################
+
 ## Bing Virtual Hosts ##
 
 def BingVHostsSearch(value, useragent, limit):
@@ -631,6 +656,15 @@ def MainFunc():
 	info['yandexemails'], info['yandexhostnames'] = YandexSearch(info['domain'], uagent, limit)
 	all_emails.extend(info['yandexemails'])
 	all_hosts.extend(info['yandexhostnames'])
+
+#######################################################
+
+## LinkedIn search results ##
+
+	print "[+] Searching in LinkedIn.."
+	info['linkedinemails'], info['linkedinhostnames'] = LinkedInSearch(info['domain'], uagent, limit)
+	all_emails.extend(info['linkedinemails'])
+	all_hosts.extend(info['linkedinhostnames'])
 
 #######################################################
 
