@@ -625,7 +625,7 @@ def HostnamesTerminalReport(hostnames):
 
 ## Information Console report ##
 
-def InfoTerminalReport(mode, limit, dnsserver, proxy, domain, ip):
+def InfoTerminalReport(mode, limit, dnsserver, proxy, domain, ip, uas):
 
 	print "[+] Information gathering: {}".format(mode)
 	print "[+] Looking into first {} search engines results".format(limit)
@@ -633,6 +633,7 @@ def InfoTerminalReport(mode, limit, dnsserver, proxy, domain, ip):
 	if proxy:
 		print "[+] Using Proxy server: {}".format(proxy)
 	print "[+] Target: {}:{}".format(domain, ip)
+	print "[+] User-agent strings: {}".format(uas)
 	print
 
 #######################################################
@@ -691,6 +692,14 @@ def VHostsTerminalReport(data):
 
 #######################################################
 
+## All major formats final report ##
+
+def AllFormatsReport(info):
+
+	pass
+
+#######################################################
+
 ## Main Function ##
 
 def MainFunc():
@@ -731,37 +740,44 @@ def MainFunc():
 	args = parser.parse_args()
 
 	info['domain'] = args.domain
-	proxies = {}
+	info['proxies'] = {}
 
 #######################################################
 
 ## Load User-Agents strings from file ##
 
 	if os.path.isfile(user_agent_strings_file):
-		uas = lines = [line.strip() for line in open(user_agent_strings_file)]
+		uas = [line.strip() for line in open(user_agent_strings_file)]
+	else:
+		print "[-] An error occured while loading user-agent strings from file"
+		sys.exit()
+
+	output_basename = None
+	if args.basename is not None and os.path.isdir(args.basename):
+		output_basename = args.basename
 
 #######################################################
 
 ## information ##
 
-	mode = args.mode.lower()
-	limit = args.limit
-	dnsserver = args.dnsserver
+	info['mode'] = args.mode.lower()
+	info['limit'] = args.limit
+	info['dnsserver'] = args.dnsserver
 	info['ip'] = VerifyHostname(info['domain'])
 
 	if args.proxy:
-		proxies = {
+		info['proxies'] = {
 		      'http': args.proxy,
 		      'https': args.proxy,
 		  }
 
-	InfoTerminalReport(mode, limit, dnsserver, args.proxy, info['domain'], info['ip'])
+	InfoTerminalReport(info['mode'], info['limit'], info['dnsserver'], args.proxy, info['domain'], info['ip'], len(uas))
 
 #######################################################
 
 ## Whois query report ##
 
-	if mode == 'all' or mode == 'whois':
+	if info['mode'] == 'all' or info['mode'] == 'whois':
 		print "[+] Whois lookup:"
 		print "-----------------"
 		info['whois'] = WhoisQuery(info['domain'])
@@ -771,39 +787,39 @@ def MainFunc():
 
 ## DNS records report ##
 
-	if mode == 'all' or mode == 'dns':
+	if info['mode'] == 'all' or info['mode'] == 'dns':
 		print "[+] DNS queries:"
 		print "----------------"
-		info['dns'] = DnsQuery(info['domain'], dnsserver)
+		info['dns'] = DnsQuery(info['domain'], info['dnsserver'])
 		DNSTerminalReport(info['dns'])
 
 #######################################################
 
 ## IP Reverse DNS lookup report ##
 
-	if mode == 'all' or mode == 'revdns':
+	if info['mode'] == 'all' or info['mode'] == 'revdns':
 		print "[+] Reverse DNS Lookup:"
 		print "-----------------------"
-		info['revdns'] = ReverseIPQuery(info['ip'], dnsserver)
+		info['revdns'] = ReverseIPQuery(info['ip'], info['dnsserver'])
 		ReverseDNSTerminalReport(info['ip'], info['revdns'])
 
 #######################################################
 
 # Bing Virtual Hosts search results report ##
 
-	if mode == 'all' or mode == 'vhosts':
+	if info['mode'] == 'all' or info['mode'] == 'vhosts':
 		print "[+] Bing Virtual Hosts:"
 		print "-----------------------"
-		info['bingvhosts'] = BingVHostsSearch(info['ip'], limit, uas, proxies, timeouts)
+		info['bingvhosts'] = BingVHostsSearch(info['ip'], info['limit'], uas, info['proxies'], timeouts)
 		VHostsTerminalReport(info['bingvhosts'])
 
 #######################################################
 
 ## Google search ##
 
-	if mode == 'all' or mode == 'google':
+	if info['mode'] == 'all' or info['mode'] == 'google':
 		print "[+] Searching in Google.."
-		temp1, temp2 = GoogleSearch(info['domain'], limit, uas, proxies, timeouts)
+		temp1, temp2 = GoogleSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -812,9 +828,9 @@ def MainFunc():
 
 ## Bing search ##
 
-	if mode == 'all' or mode == 'bing':
+	if info['mode'] == 'all' or info['mode'] == 'bing':
 		print "[+] Searching in Bing.."
-		temp1, temp2 = BingSearch(info['domain'], limit, uas, proxies, timeouts)
+		temp1, temp2 = BingSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -823,9 +839,9 @@ def MainFunc():
 
 ## Yahoo search ##
 
-	if mode == 'all' or mode == 'yahoo':
+	if info['mode'] == 'all' or info['mode'] == 'yahoo':
 		print "[+] Searching in Yahoo.."
-		temp1, temp2 = YahooSearch(info['domain'], limit, uas, proxies, timeouts)
+		temp1, temp2 = YahooSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -834,9 +850,9 @@ def MainFunc():
 
 ## ASK search ##
 
-	if mode == 'all' or mode == 'ask':
+	if info['mode'] == 'all' or info['mode'] == 'ask':
 		print "[+] Searching in ASK.."
-		temp1, temp2 = AskSearch(info['domain'], 5, uas, proxies, timeouts) #5 pages
+		temp1, temp2 = AskSearch(info['domain'], 5, uas, info['proxies'], timeouts) #5 pages
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -845,9 +861,9 @@ def MainFunc():
 
 ## Dogpile search ##
 
-	if mode == 'all' or mode == 'dogpile':
+	if info['mode'] == 'all' or info['mode'] == 'dogpile':
 		print "[+] Searching in Dogpile.."
-		temp1, temp2 = DogpileSearch(info['domain'], limit, uas, proxies, timeouts)
+		temp1, temp2 = DogpileSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -856,9 +872,9 @@ def MainFunc():
 
 ## Yandex search ##
 
-	if mode == 'all' or mode == 'yandex':
+	if info['mode'] == 'all' or info['mode'] == 'yandex':
 		print "[+] Searching in Yandex.."
-		temp1, temp2 = YandexSearch(info['domain'], limit, uas, proxies, timeouts)
+		temp1, temp2 = YandexSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -867,9 +883,9 @@ def MainFunc():
 
 ## crt search ##
 
-	if mode == 'all' or mode == 'crt':
+	if info['mode'] == 'all' or info['mode'] == 'crt':
 		print "[+] Searching in Crt.."
-		temp = CrtSearch(info['domain'], uas, proxies)
+		temp = CrtSearch(info['domain'], uas, info['proxies'])
 		info['all_hosts'].extend(temp)
 		HostnamesTerminalReport(temp)
 
@@ -877,9 +893,9 @@ def MainFunc():
 
 ## PGP search ##
 
-	if mode == 'all' or mode == 'pgp':
+	if info['mode'] == 'all' or info['mode'] == 'pgp':
 		print "[+] Searching in PGP.."
-		temp1, temp2 = PGPSearch(info['domain'], uas, proxies)
+		temp1, temp2 = PGPSearch(info['domain'], uas, info['proxies'])
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -888,9 +904,9 @@ def MainFunc():
 
 ## netcraft search ##
 
-	if mode == 'all' or mode == 'netcraft':
+	if info['mode'] == 'all' or info['mode'] == 'netcraft':
 		print "[+] Searching in Netcraft.."
-		temp = NetcraftSearch(info['domain'], uas, proxies)
+		temp = NetcraftSearch(info['domain'], uas, info['proxies'])
 		info['all_hosts'].extend(temp)
 		HostnamesTerminalReport(temp)
 
@@ -898,9 +914,9 @@ def MainFunc():
 
 ## virustotal search ##
 
-	if mode == 'all' or mode == 'virustotal':
+	if info['mode'] == 'all' or info['mode'] == 'virustotal':
 		print "[+] Searching in VirusTotal.."
-		temp = VTSearch(info['domain'], uas, proxies)
+		temp = VTSearch(info['domain'], uas, info['proxies'])
 		info['all_hosts'].extend(temp)
 		HostnamesTerminalReport(temp)
 
@@ -908,9 +924,9 @@ def MainFunc():
 
 ## LinkedIn search ##
 
-	if mode == 'all' or mode == 'linkedin':
+	if info['mode'] == 'all' or info['mode'] == 'linkedin':
 		print "[+] Searching in LinkedIn.."
-		temp1, temp2 = SiteSearch(info['domain'], 'linkedin.com', limit, uas, proxies, timeouts)
+		temp1, temp2 = SiteSearch(info['domain'], 'linkedin.com', info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -919,9 +935,9 @@ def MainFunc():
 
 ## Twitter search ##
 
-	if mode == 'all' or mode == 'twitter':
+	if info['mode'] == 'all' or info['mode'] == 'twitter':
 		print "[+] Searching in Twitter.."
-		temp1, temp2 = SiteSearch(info['domain'], "twitter.com", limit, uas, proxies, timeouts)
+		temp1, temp2 = SiteSearch(info['domain'], "twitter.com", info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -930,9 +946,9 @@ def MainFunc():
 
 ## Google+ search ##
 
-	if mode == 'all' or mode == 'googleplus':
+	if info['mode'] == 'all' or info['mode'] == 'googleplus':
 		print "[+] Searching in Google+.."
-		temp1, temp2 = SiteSearch(info['domain'], "plus.google.com", limit, uas, proxies, timeouts)
+		temp1, temp2 = SiteSearch(info['domain'], "plus.google.com", info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -941,9 +957,9 @@ def MainFunc():
 
 ## Youtube search ##
 
-	if mode == 'all' or mode == 'youtube':
+	if info['mode'] == 'all' or info['mode'] == 'youtube':
 		print "[+] Searching in Youtube.."
-		temp1, temp2 = SiteSearch(info['domain'], "youtube.com", limit, uas, proxies, timeouts)
+		temp1, temp2 = SiteSearch(info['domain'], "youtube.com", info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -952,9 +968,9 @@ def MainFunc():
 
 ## Reddit search ##
 
-	if mode == 'all' or mode == 'reddit':
+	if info['mode'] == 'all' or info['mode'] == 'reddit':
 		print "[+] Searching in Reddit.."
-		temp1, temp2 = SiteSearch(info['domain'], "reddit.com", limit, uas, proxies, timeouts)
+		temp1, temp2 = SiteSearch(info['domain'], "reddit.com", info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -963,9 +979,9 @@ def MainFunc():
 
 ## Github search ##
 
-	if mode == 'all' or mode == 'github':
+	if info['mode'] == 'all' or info['mode'] == 'github':
 		print "[+] Searching in Github.."
-		temp1, temp2 = SiteSearch(info['domain'], "github.com", limit, uas, proxies, timeouts)
+		temp1, temp2 = SiteSearch(info['domain'], "github.com", info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -974,9 +990,9 @@ def MainFunc():
 
 ## Instagram search ##
 
-	if mode == 'all' or mode == 'instagram':
+	if info['mode'] == 'all' or info['mode'] == 'instagram':
 		print "[+] Searching in Instagram.."
-		temp1, temp2 = SiteSearch(info['domain'], "instagram.com", limit, uas, proxies, timeouts)
+		temp1, temp2 = SiteSearch(info['domain'], "instagram.com", info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
 		TerminalReport(temp1, temp2)
@@ -991,6 +1007,9 @@ def MainFunc():
 	info['all_emails'] = sorted(set(info['all_emails']))
 	info['all_hosts'] = sorted(set(info['all_hosts']))
 	TerminalReport(info['all_emails'], info['all_hosts'])
+
+	if output_basename:
+		AllFormatsReport(info)
 
 #######################################################
 
