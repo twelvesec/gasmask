@@ -298,20 +298,20 @@ def PickRandomTimeout(value):
 
 #######################################################
 
-## Google search ##
+## Common search ##
 
-def GoogleSearch(value, limit, uas, proxies, timeouts):
+def CommonSearch(value, urltemplate, quantity, step, limit, uas, proxies, timeouts):
 
-	server = "www.google.com"
-	quantity = 100
 	counter = 0
-	step = 100
 	results = ""
 
 	while counter <= limit:
 		try:
-			url = "https://" + server + "/search?num=" + str(quantity) + "&start=" + str(counter) + "&hl=en&meta=&q=%40%22" + value + "%22"
+			url = urltemplate.format(quantity=quantity, counter=counter, value=value)
 		 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+		 	if r.status_code != 200:
+		 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
+		 		return [], []
 		 	results += r.content
 		except Exception,e:
 			print e
@@ -320,6 +320,43 @@ def GoogleSearch(value, limit, uas, proxies, timeouts):
 		counter += step
 
 	return GetEmails(results, value), GetHostnames(results, value)
+
+#######################################################
+
+## Common search ##
+
+def CommonSearch2(value, urltemplate, step, limit, uas, proxies, timeouts):
+
+	counter = 1
+	results = ""
+
+	while counter <= limit:
+		try:
+			url = urltemplate.format(counter=counter, value=value)
+		 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+		 	if r.status_code != 200:
+		 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
+		 		return [], []
+		 	results += r.content
+		except Exception,e:
+			print e
+
+		time.sleep(PickRandomTimeout(timeouts))
+		counter += step
+
+	return GetEmails(results, value), GetHostnames(results, value)
+
+#######################################################
+
+## Google search ##
+
+def GoogleSearch(value, limit, uas, proxies, timeouts):
+
+	quantity = 100
+	step = 100
+	url = "https://www.google.com/search?num={quantity}&start={counter}&hl=en&meta=&q=%40%22{value}%22"
+
+	return CommonSearch(value, url, quantity, step, limit, uas, proxies, timeouts)
 
 #######################################################
 
@@ -327,49 +364,22 @@ def GoogleSearch(value, limit, uas, proxies, timeouts):
 
 def BingSearch(value, limit, uas, proxies, timeouts):
 
-	server = "www.bing.com"
 	quantity = 50
-	counter = 0
 	step = 50
-	results = ""
+	url = "https://www.bing.com/search?q=%40{value}&count={quantity}&first={counter}"
 
-	while counter <= limit:
-		try:
-			url = "https://" + server + "/search?q=%40" + value + "&count=" + str(quantity) + "&first=" + str(counter)
-		 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
-		 	results += r.content
-		except Exception,e:
-			print e
-
-		time.sleep(PickRandomTimeout(timeouts))
-		counter += step
-
-	return GetEmails(results, value), GetHostnames(results, value)
+	return CommonSearch(value, url, quantity, step, limit, uas, proxies, timeouts)
 
 #######################################################
 
 ## ASK search ##
 
-def AskSearch(value, uas, proxies, timeouts):
+def AskSearch(value, limit, uas, proxies, timeouts):
 
-	server = "www.ask.com"
-	limit = 5
 	step = 1
-	page = 1
-	results = ""
+	url = "https://www.ask.com/web?q=%40%22{value}%22&page={counter}"
 
-	while page <= limit:
-		try:
-			url = "https://" + server + "/web?q=%40%22" + value + "%22&page=" + str(page)
-		 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
-		 	results += r.content
-		except Exception,e:
-			print e
-
-		time.sleep(PickRandomTimeout(timeouts))
-		page += step
-
-	return GetEmails(results, value), GetHostnames(results, value)
+	return CommonSearch2(value, url, step, limit, uas, proxies, timeouts)
 
 #######################################################
 
@@ -377,23 +387,10 @@ def AskSearch(value, uas, proxies, timeouts):
 
 def DogpileSearch(value, limit, uas, proxies, timeouts):
 
-	server = "www.dogpile.com"
 	step = 15
-	counter = 1
-	results = ""
+	url = "https://www.dogpile.com/search/web?qsi={counter}&q=%40{value}"
 
-	while counter <= limit:
-		try:
-			url = "https://" + server + "/search/web?qsi=" + str(counter) + "&q=%40" + value
-		 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
-		 	results += r.content
-		except Exception,e:
-			print e
-
-		time.sleep(PickRandomTimeout(timeouts))
-		counter += step
-
-	return GetEmails(results, value), GetHostnames(results, value)
+	return CommonSearch2(value, url, step, limit, uas, proxies, timeouts)
 
 #######################################################
 
@@ -401,23 +398,10 @@ def DogpileSearch(value, limit, uas, proxies, timeouts):
 
 def YahooSearch(value, limit, uas, proxies, timeouts):
 
-	server = "search.yahoo.com"
 	step = 10
-	counter = 1
-	results = ""
+	url = "https://search.yahoo.com/search?p=%40{value}&b={counter}&pz=10"
 
-	while counter <= limit:
-		try:
-			url = "https://" + server + "/search?p=%40" + value + "&b=" + str(counter) + "&pz=10"
-		 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
-		 	results += r.content
-		except Exception,e:
-			print e
-
-		time.sleep(PickRandomTimeout(timeouts))
-		counter += step
-
-	return GetEmails(results, value), GetHostnames(results, value)
+	return CommonSearch2(value, url, step, limit, uas, proxies, timeouts)
 
 #######################################################
 
@@ -436,6 +420,9 @@ def YandexSearch(value, limit, uas, proxies, timeouts):
 		try:
 			url = "https://" + server + "/search/?text=%22%40" + value + "%22&numdoc=" + str(quantity) + "&p=" + str(page) + "&lr=10418"
 		 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+		 	if r.status_code != 200:
+		 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
+		 		return [], []
 		 	results += r.content
 		except Exception,e:
 			print e
@@ -462,6 +449,9 @@ def SiteSearch(value, site, limit, uas, proxies, timeouts):
 		try:
 			url = "https://" + server + "/search?num=" + str(quantity) + "&start=" + str(counter) + "&hl=en&meta=&q=site%3A" + site + "%20%40%22" + value + "%22"
 			r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+			if r.status_code != 200:
+		 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
+		 		return [], []
 		 	results += r.content
 			# s = requests.Session()
 			# s.headers.update({'Host': server})
@@ -490,6 +480,7 @@ def SiteSearch(value, site, limit, uas, proxies, timeouts):
 def BingVHostsSearch(value, limit, uas, proxies, timeouts):
 
 	server = "www.bing.com"
+	quantity = 50
 	step = 50
 	counter = 0
 	results = ""
@@ -497,8 +488,11 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
 
 	while counter <= limit:
 		try:
-			url = "https://" + server + "/search?q=ip%3A" + value + "&go=&count=" + str(step) + "&FORM=QBHL&qs=n&first=" + str(counter)
+			url = "https://" + server + "/search?q=ip%3A" + value + "&go=&count=" + str(quantity) + "&FORM=QBHL&qs=n&first=" + str(counter)
 		 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+		 	if r.status_code != 200:
+		 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
+		 		return [], []
 		 	results += r.content
 		except Exception,e:
 			print e
@@ -518,13 +512,28 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
 
 #######################################################
 
+## Console report ##
+
+def TerminalReport(emails, hostnames):
+	print
+	print "Emails:"
+	for email in emails:
+		print email
+	print
+	print "Hostnames:"
+	for host in hostnames:
+		print host
+	print
+
+#######################################################
+
 ## Main Function ##
 
 def MainFunc():
 	print message
 	info = {}
-	all_emails = []
-	all_hosts = []
+	info['all_emails'] = []
+	info['all_hosts'] = []
 	uas = []
 	user_agent_strings_file = 'common-ua.txt'
 	timeouts = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
@@ -538,7 +547,7 @@ def MainFunc():
 	parser.add_argument('-x', '--proxy', action="store", metavar='PROXY', dest='proxy',
 		default=None, type=str, help="Use a proxy server when retrieving results from search engines (eg. '-x http://127.0.0.1:8080')")
 	parser.add_argument("-l", '--limit', action="store", metavar='LIMIT', dest='limit',
-		type=int, default=100, help="Limit the number of search engine results.")
+		type=int, default=100, help="Limit the number of search engine results (default: 100).")
 
     #parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',
     #                    type=str, default=None, help='Output in the four major formats at once.')
@@ -651,136 +660,141 @@ def MainFunc():
 ## Google search ##
 
 	print "[+] Searching in Google.."
-	info['googleemails'], info['googlehostnames'] = GoogleSearch(info['domain'], limit, uas, proxies, timeouts)
-	all_emails.extend(info['googleemails'])
-	all_hosts.extend(info['googlehostnames'])
+	temp1, temp2 = GoogleSearch(info['domain'], limit, uas, proxies, timeouts)
+	info['all_emails'].extend(temp1)
+	info['all_hosts'].extend(temp2)
+	TerminalReport(temp1, temp2)
 
 #######################################################
 
 ## Bing search ##
 
 	print "[+] Searching in Bing.."
-	info['bingemails'], info['binghostnames'] = BingSearch(info['domain'], limit, uas, proxies, timeouts)
-	all_emails.extend(info['bingemails'])
-	all_hosts.extend(info['binghostnames'])
+	temp1, temp2 = BingSearch(info['domain'], limit, uas, proxies, timeouts)
+	info['all_emails'].extend(temp1)
+	info['all_hosts'].extend(temp2)
+	TerminalReport(temp1, temp2)
 
 #######################################################
 
 ## Yahoo search ##
 
 	print "[+] Searching in Yahoo.."
-	info['yahooemails'], info['yahoohostnames'] = YahooSearch(info['domain'], limit, uas, proxies, timeouts)
-	all_emails.extend(info['yahooemails'])
-	all_hosts.extend(info['yahoohostnames'])
+	temp1, temp2 = YahooSearch(info['domain'], limit, uas, proxies, timeouts)
+	info['all_emails'].extend(temp1)
+	info['all_hosts'].extend(temp2)
+	TerminalReport(temp1, temp2)
 
 #######################################################
 
 ## ASK search ##
 
 	print "[+] Searching in ASK.."
-	info['askemails'], info['askhostnames'] = AskSearch(info['domain'], uas, proxies, timeouts)
-	all_emails.extend(info['askemails'])
-	all_hosts.extend(info['askhostnames'])
+	temp1, temp2 = AskSearch(info['domain'], 5, uas, proxies, timeouts) #5 pages
+	info['all_emails'].extend(temp1)
+	info['all_hosts'].extend(temp2)
+	TerminalReport(temp1, temp2)
 
 #######################################################
 
 ## Dogpile search ##
 
 	print "[+] Searching in Dogpile.."
-	info['dogpileemails'], info['dogpilehostnames'] = DogpileSearch(info['domain'], limit, uas, proxies, timeouts)
-	all_emails.extend(info['dogpileemails'])
-	all_hosts.extend(info['dogpilehostnames'])
+	temp1, temp2 = DogpileSearch(info['domain'], limit, uas, proxies, timeouts)
+	info['all_emails'].extend(temp1)
+	info['all_hosts'].extend(temp2)
+	TerminalReport(temp1, temp2)
 
 #######################################################
 
 ## Yandex search ##
 
 	print "[+] Searching in Yandex.."
-	info['yandexemails'], info['yandexhostnames'] = YandexSearch(info['domain'], limit, uas, proxies, timeouts)
-	all_emails.extend(info['yandexemails'])
-	all_hosts.extend(info['yandexhostnames'])
+	temp1, temp2 = YandexSearch(info['domain'], limit, uas, proxies, timeouts)
+	info['all_emails'].extend(temp1)
+	info['all_hosts'].extend(temp2)
+	TerminalReport(temp1, temp2)
 
 #######################################################
 
 ## LinkedIn search ##
 
 	print "[+] Searching in LinkedIn.."
-	info['linkedinemails'], info['linkedinhostnames'] = SiteSearch(info['domain'], 'linkedin.com', limit, uas, proxies, timeouts)
-	all_emails.extend(info['linkedinemails'])
-	all_hosts.extend(info['linkedinhostnames'])
+	temp1, temp2 = SiteSearch(info['domain'], 'linkedin.com', limit, uas, proxies, timeouts)
+	info['all_emails'].extend(temp1)
+	info['all_hosts'].extend(temp2)
+	TerminalReport(temp1, temp2)
 
 #######################################################
 
 ## Twitter search ##
 
 	print "[+] Searching in Twitter.."
-	info['twitteremails'], info['twitterhostnames'] = SiteSearch(info['domain'], "twitter.com", limit, uas, proxies, timeouts)
-	all_emails.extend(info['twitteremails'])
-	all_hosts.extend(info['twitterhostnames'])
+	temp1, temp2 = SiteSearch(info['domain'], "twitter.com", limit, uas, proxies, timeouts)
+	info['all_emails'].extend(temp1)
+	info['all_hosts'].extend(temp2)
+	TerminalReport(temp1, temp2)
 
 #######################################################
 
 ## Google+ search ##
 
 	print "[+] Searching in Google+.."
-	info['googleplusemails'], info['googleplushostnames'] = SiteSearch(info['domain'], "plus.google.com", limit, uas, proxies, timeouts)
-	all_emails.extend(info['googleplusemails'])
-	all_hosts.extend(info['googleplushostnames'])
+	temp1, temp2 = SiteSearch(info['domain'], "plus.google.com", limit, uas, proxies, timeouts)
+	info['all_emails'].extend(temp1)
+	info['all_hosts'].extend(temp2)
+	TerminalReport(temp1, temp2)
 
 #######################################################
 
 ## Youtube search ##
 
 	print "[+] Searching in Youtube.."
-	info['youtubeemails'], info['youtubehostnames'] = SiteSearch(info['domain'], "youtube.com", limit, uas, proxies, timeouts)
-	all_emails.extend(info['youtubeemails'])
-	all_hosts.extend(info['youtubehostnames'])
+	temp1, temp2 = SiteSearch(info['domain'], "youtube.com", limit, uas, proxies, timeouts)
+	info['all_emails'].extend(temp1)
+	info['all_hosts'].extend(temp2)
+	TerminalReport(temp1, temp2)
 
 #######################################################
 
 ## Reddit search ##
 
 	print "[+] Searching in Reddit.."
-	info['redditemails'], info['reddithostnames'] = SiteSearch(info['domain'], "reddit.com", limit, uas, proxies, timeouts)
-	all_emails.extend(info['redditemails'])
-	all_hosts.extend(info['reddithostnames'])
+	temp1, temp2 = SiteSearch(info['domain'], "reddit.com", limit, uas, proxies, timeouts)
+	info['all_emails'].extend(temp1)
+	info['all_hosts'].extend(temp2)
+	TerminalReport(temp1, temp2)
 
 #######################################################
 
 ## Github search ##
 
 	print "[+] Searching in Github.."
-	info['githubemails'], info['githubhostnames'] = SiteSearch(info['domain'], "github.com", limit, uas, proxies, timeouts)
-	all_emails.extend(info['githubemails'])
-	all_hosts.extend(info['githubhostnames'])
+	temp1, temp2 = SiteSearch(info['domain'], "github.com", limit, uas, proxies, timeouts)
+	info['all_emails'].extend(temp1)
+	info['all_hosts'].extend(temp2)
+	TerminalReport(temp1, temp2)
 
 #######################################################
 
 ## Instagram search ##
 
 	print "[+] Searching in Instagram.."
-	info['instagramemails'], info['instagramhostnames'] = SiteSearch(info['domain'], "instagram.com", limit, uas, proxies, timeouts)
-	all_emails.extend(info['instagramemails'])
-	all_hosts.extend(info['instagramhostnames'])
+	temp1, temp2 = SiteSearch(info['domain'], "instagram.com", limit, uas, proxies, timeouts)
+	info['all_emails'].extend(temp1)
+	info['all_hosts'].extend(temp2)
+	TerminalReport(temp1, temp2)
 
 #######################################################
 
 ## Search Results Final Report ##
 
 	print
-	print "[+] Search engines Results - Final Report:"
+	print "[+] Search engines results - Final Report:"
 	print "------------------------------------------"
-	all_emails = sorted(set(all_emails))
-	all_hosts = sorted(set(all_hosts))
-	print
-	print "Emails:"
-	for email in all_emails:
-		print email
-	print
-	print "Hostnames:"
-	for host in all_hosts:
-		print host
-	print
+	info['all_emails'] = sorted(set(info['all_emails']))
+	info['all_hosts'] = sorted(set(info['all_hosts']))
+	TerminalReport(info['all_emails'], info['all_hosts'])
 
 #######################################################
 
