@@ -597,7 +597,7 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
 
 #######################################################
 
-## Console report ##
+## Emails & Hostnames Console report ##
 
 def TerminalReport(emails, hostnames):
 	print
@@ -612,13 +612,27 @@ def TerminalReport(emails, hostnames):
 
 #######################################################
 
-## Console report ##
+## Hostnames Console report ##
 
 def HostnamesTerminalReport(hostnames):
 	print
 	print "Hostnames:"
 	for host in hostnames:
 		print host
+	print
+
+#######################################################
+
+## Information Console report ##
+
+def InfoTerminalReport(mode, limit, dnsserver, proxy, domain, ip):
+
+	print "[+] Information gathering: {}".format(mode)
+	print "[+] Looking into first {} search engines results".format(limit)
+	print "[+] Using DNS server: {}".format(dnsserver)
+	if proxy:
+		print "[+] Using Proxy server: {}".format(proxy)
+	print "[+] Target: {}:{}".format(domain, ip)
 	print
 
 #######################################################
@@ -649,9 +663,8 @@ def MainFunc():
 		type=int, default=100, help="Limit the number of search engine results (default: 100).")
 	parser.add_argument("-i", '--info', action="store", metavar='MODE', dest='mode',
 		type=str, default='all', help="Limit information gathering (" + ','.join(modes) + ").")
-
-    #parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',
-    #                    type=str, default=None, help='Output in the four major formats at once.')
+	parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',
+		type=str, default=None, help='Output in the four major formats at once (markdown, txt, xml and html).')
 
 	if len(sys.argv) is 1:
 		parser.print_help()
@@ -674,29 +687,17 @@ def MainFunc():
 ## information ##
 
 	mode = args.mode.lower()
-	print "[+] Information gathering: {}".format(mode)
-
 	limit = args.limit
-	print "[+] Looking into first {} search engines results".format(limit)
-
 	dnsserver = args.dnsserver
-	print "[+] Using DNS server: {}".format(dnsserver)
+	info['ip'] = VerifyHostname(info['domain'])
 
 	if args.proxy:
 		proxies = {
 		      'http': args.proxy,
 		      'https': args.proxy,
 		  }
-		print "[+] Using Proxy server: " + args.proxy
-		print
 
-#######################################################
-
-## target ##
-
-	info['ip'] = VerifyHostname(info['domain'])
-	print "[+] Target: " + info['domain'] + ":" + info['ip']
-	print
+	InfoTerminalReport(mode, limit, dnsserver, args.proxy, info['domain'], info['ip'])
 
 #######################################################
 
