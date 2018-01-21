@@ -637,16 +637,74 @@ def InfoTerminalReport(mode, limit, dnsserver, proxy, domain, ip):
 
 #######################################################
 
+## Whois Console report ##
+
+def WhoisTerminalReport(data):
+
+	for key,value in data.iteritems():
+		if isinstance(value[0], list):
+			print
+			print value[1]
+			for val in value[0]:
+				print val
+			print
+		else:
+			print value[1] + " " + value[0]
+	print
+
+#######################################################
+
+## DNS Console report ##
+
+def DNSTerminalReport(data):
+
+	for key,value in data.iteritems():
+		if(len(value) == 1):
+			print key + " DNS record: " + value[0]
+		else:
+			print
+			print key + " DNS record: "
+			for val in value:
+				print val
+			print
+	print
+
+#######################################################
+
+## Reverse DNS Console report ##
+
+def ReverseDNSTerminalReport(ip, data):
+
+	if data:
+		print ip + ":" + data
+	print
+
+#######################################################
+
+## VHosts Console report ##
+
+def VHostsTerminalReport(data):
+
+	for host in data:
+		print host
+	print
+
+#######################################################
+
 ## Main Function ##
 
 def MainFunc():
+
 	print message
+
 	info = {}
 	info['all_emails'] = []
 	info['all_hosts'] = []
 	uas = []
+
 	user_agent_strings_file = 'common-ua.txt'
 	timeouts = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+
 	modes = ['all', 'whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo',
 		'ask', 'dogpile', 'yandex', 'linkedin', 'twitter', 'googleplus', 'youtube', 'reddit',
 		'github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal']
@@ -707,16 +765,7 @@ def MainFunc():
 		print "[+] Whois lookup:"
 		print "-----------------"
 		info['whois'] = WhoisQuery(info['domain'])
-		for key,value in info['whois'].iteritems():
-			if isinstance(value[0], list):
-				print
-				print value[1]
-				for val in value[0]:
-					print val
-				print
-			else:
-				print value[1] + " " + value[0]
-		print
+		WhoisTerminalReport(info['whois'])
 
 #######################################################
 
@@ -726,16 +775,7 @@ def MainFunc():
 		print "[+] DNS queries:"
 		print "----------------"
 		info['dns'] = DnsQuery(info['domain'], dnsserver)
-		for key,value in info['dns'].iteritems():
-			if(len(value) == 1):
-				print key + " DNS record: " + value[0]
-			else:
-				print
-				print key + " DNS record: "
-				for val in value:
-					print val
-				print
-		print
+		DNSTerminalReport(info['dns'])
 
 #######################################################
 
@@ -745,9 +785,7 @@ def MainFunc():
 		print "[+] Reverse DNS Lookup:"
 		print "-----------------------"
 		info['revdns'] = ReverseIPQuery(info['ip'], dnsserver)
-		if info['revdns']:
-			print info['ip'] + ":" + info['revdns']
-		print
+		ReverseDNSTerminalReport(info['ip'], info['revdns'])
 
 #######################################################
 
@@ -757,10 +795,7 @@ def MainFunc():
 		print "[+] Bing Virtual Hosts:"
 		print "-----------------------"
 		info['bingvhosts'] = BingVHostsSearch(info['ip'], limit, uas, proxies, timeouts)
-		print
-		for host in info['bingvhosts']:
-			print host
-		print
+		VHostsTerminalReport(info['bingvhosts'])
 
 #######################################################
 
