@@ -2,6 +2,8 @@
 
 All in one Information gathering tool - OSINT
 
+Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.com/maldevel))
+
 ### Information Gathering
 
 * ask
