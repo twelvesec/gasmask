@@ -499,6 +499,27 @@ def NetcraftSearch(value, uas, proxies):
 
 #######################################################
 
+## virustotal search ##
+
+def VTSearch(value, uas, proxies):
+
+	server = "www.virustotal.com"
+	results = ""
+
+	try:
+		url = "https://" + server + "/en/domain/" + value + "/information/"
+	 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+	 	if r.status_code != 200:
+	 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
+	 		return [], []
+	 	results += r.content
+	except Exception,e:
+		print e
+
+	return GetHostnames(results, value)
+
+#######################################################
+
 ## site: + Google search ##
 
 def SiteSearch(value, site, limit, uas, proxies, timeouts):
@@ -834,6 +855,16 @@ def MainFunc():
 	if mode == 'all' or mode == 'netcraft':
 		print "[+] Searching in Netcraft.."
 		temp = NetcraftSearch(info['domain'], uas, proxies)
+		info['all_hosts'].extend(temp)
+		HostnamesTerminalReport(temp)
+
+#######################################################
+
+## virustotal search ##
+
+	if mode == 'all' or mode == 'virustotal':
+		print "[+] Searching in VirusTotal.."
+		temp = VTSearch(info['domain'], uas, proxies)
 		info['all_hosts'].extend(temp)
 		HostnamesTerminalReport(temp)
 
