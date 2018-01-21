@@ -614,7 +614,7 @@ def MainFunc():
 	timeouts = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 	modes = ['all', 'whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo',
 		'ask', 'dogpile', 'yandex', 'linkedin', 'twitter', 'googleplus', 'youtube', 'reddit',
-		'github', 'instagram', 'crt', 'pgp', 'netcraft']
+		'github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal']
 
 	parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
