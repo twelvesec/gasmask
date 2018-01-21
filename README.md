@@ -1,7 +1,8 @@
 ## gasmask
 
-Information gathering tool - OSINT
+All in one Information gathering tool - OSINT
 
 ### Credits
 
-[theHarvester](https://github.com/laramies/theHarvester)
+* [EmailHarvester](https://github.com/maldevel/EmailHarvester)
+* [theHarvester](https://github.com/laramies/theHarvester)
