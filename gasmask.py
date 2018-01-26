@@ -620,20 +620,29 @@ def Report(engine, emails, hostnames, output_basename):
 	print
 
 	if output_basename:
-		output = output_basename + ".txt"
-		with open(output, 'a') as outfile:
-			outfile.write("[+] {} results\n".format(engine))
-			outfile.write("-------------------------\n")
-			outfile.write("\n")
-			outfile.write("Emails:\n")
+		output1 = output_basename + ".txt"
+		output2 = output_basename + ".md"
+		with open(output1, 'a') as txt, open(output2, 'a') as md:
+			txt.write("[+] {} results\n".format(engine))
+			md.write("---\n\n")
+			md.write("## {} results\n".format(engine))
+			txt.write("-------------------------\n")
+			txt.write("\n")
+			md.write("\n")
+			txt.write("Emails:\n")
+			md.write("### Emails\n\n")
 			for email in emails:
-				outfile.write("{}\n".format(email))
-
-			outfile.write("\n")
-			outfile.write("Hostnames:\n")
+				txt.write("{}\n".format(email))
+				md.write("* {}\n".format(email))
+			txt.write("\n")
+			md.write("\n")
+			txt.write("Hostnames:\n")
+			md.write("### Hostnames\n\n")
 			for host in hostnames:
-				outfile.write("{}\n".format(host))
-			outfile.write("\n")
+				txt.write("{}\n".format(host))
+				md.write("* {}\n".format(host))
+			txt.write("\n")
+			md.write("\n")
 
 #######################################################
 
@@ -648,15 +657,22 @@ def HostnamesReport(engine, hostnames, output_basename):
 	print
 
 	if output_basename:
-		output = output_basename + ".txt"
-		with open(output, 'a') as outfile:
-			outfile.write("[+] {} results\n".format(engine))
-			outfile.write("-------------------------\n")
-			outfile.write("\n")
-			outfile.write("Hostnames:\n")
+		output1 = output_basename + ".txt"
+		output2 = output_basename + ".md"
+		with open(output1, 'a') as txt, open(output2, 'a') as md:
+			txt.write("[+] {} results\n".format(engine))
+			md.write("---\n\n")
+			md.write("## {} results\n".format(engine))
+			txt.write("-------------------------\n")
+			txt.write("\n")
+			md.write("\n")
+			txt.write("Hostnames:\n")
+			md.write("### Hostnames\n\n")
 			for host in hostnames:
-				outfile.write("{}\n".format(host))
-			outfile.write("\n")
+				txt.write("{}\n".format(host))
+				md.write("* {}\n".format(host))
+			txt.write("\n")
+			md.write("\n")
 
 #######################################################
 
@@ -674,17 +690,29 @@ def InfoReport(mode, limit, dnsserver, proxy, domain, ip, uas, output_basename):
 	print
 
 	if output_basename:
-		output = output_basename + ".txt"
-		with open(output, 'w') as outfile:
-			outfile.write("{}\n".format(message))
-			outfile.write("[+] Information gathering: {}\n".format(mode))
-			outfile.write("[+] Looking into first {} search engines results\n".format(limit))
-			outfile.write("[+] Using DNS server: {}\n".format(dnsserver))
+		output1 = output_basename + ".txt"
+		output2 = output_basename + ".md"
+		with open(output1, 'w') as txt, open(output2, 'w') as md:
+			txt.write("{}\n".format(message))
+			md.write("```\n")
+			md.write("{}\n".format(message))
+			md.write("```\n\n")
+			txt.write("[+] Information gathering: {}\n".format(mode))
+			md.write("---\n\n")
+			md.write("* Information gathering: {}\n".format(mode))
+			txt.write("[+] Looking into first {} search engines results\n".format(limit))
+			md.write("* Looking into first {} search engines results\n".format(limit))
+			txt.write("[+] Using DNS server: {}\n".format(dnsserver))
+			md.write("* Using DNS server: {}\n".format(dnsserver))
 			if proxy:
-				outfile.write("[+] Using Proxy server: {}\n".format(proxy))
-			outfile.write("[+] Target: {}:{}\n".format(domain, ip))
-			outfile.write("[+] User-agent strings: {}\n".format(uas))
-			outfile.write("\n")
+				txt.write("[+] Using Proxy server: {}\n".format(proxy))
+				md.write("* Using Proxy server: {}\n".format(proxy))
+			txt.write("[+] Target: {}:{}\n".format(domain, ip))
+			md.write("* Target: {}:{}\n".format(domain, ip))
+			txt.write("[+] User-agent strings: {}\n".format(uas))
+			md.write("* User-agent strings: {}\n".format(uas))
+			txt.write("\n")
+			md.write("\n")
 
 #######################################################
 
@@ -704,20 +732,29 @@ def WhoisReport(data, output_basename):
 	print
 
 	if output_basename:
-		output = output_basename + ".txt"
-		with open(output, 'a') as outfile:
-			outfile.write("[+] Whois lookup\n")
-			outfile.write("----------------\n")
+		output1 = output_basename + ".txt"
+		output2 = output_basename + ".md"
+		with open(output1, 'a') as txt, open(output2, 'a') as md:
+			txt.write("[+] Whois lookup\n")
+			md.write("---\n\n")
+			md.write("## Whois lookup\n\n")
+			txt.write("----------------\n")
 			for key,value in data.iteritems():
 				if isinstance(value[0], list):
-					outfile.write("\n")
-					outfile.write("{}\n".format(value[1]))
+					txt.write("\n")
+					md.write("\n")
+					txt.write("{}\n".format(value[1]))
+					md.write("* {}\n".format(value[1]))
 					for val in value[0]:
-						outfile.write("{}\n".format(val))
-					outfile.write("\n")
+						txt.write("{}\n".format(val))
+						md.write("  * {}\n".format(val))
+					txt.write("\n")
+					md.write("\n")
 				else:
-					outfile.write("{} {}\n".format(value[1], value[0]))
-			outfile.write("\n")
+					txt.write("{} {}\n".format(value[1], value[0]))
+					md.write("* {} {}\n".format(value[1], value[0]))
+			txt.write("\n")
+			md.write("\n")
 
 #######################################################
 
@@ -737,20 +774,29 @@ def DNSReport(data, output_basename):
 	print
 
 	if output_basename:
-		output = output_basename + ".txt"
-		with open(output, 'a') as outfile:
-			outfile.write("[+] DNS queries\n")
-			outfile.write("---------------\n")
+		output1 = output_basename + ".txt"
+		output2 = output_basename + ".md"
+		with open(output1, 'a') as txt, open(output2, 'a') as md:
+			txt.write("[+] DNS queries\n")
+			md.write("---\n\n")
+			md.write("## DNS queries\n\n")
+			txt.write("---------------\n")
 			for key,value in data.iteritems():
 				if(len(value) == 1):
-					outfile.write("{} DNS record: {}\n".format(key, value[0]))
+					txt.write("{} DNS record: {}\n".format(key, value[0]))
+					md.write("* {} DNS record: {}\n".format(key, value[0]))
 				else:
-					outfile.write("\n")
-					outfile.write("{} DNS record:\n".format(key))
+					txt.write("\n")
+					md.write("\n")
+					txt.write("{} DNS record:\n".format(key))
+					md.write("* {} DNS record:\n".format(key))
 					for val in value:
-						outfile.write("{}\n".format(val))
-					outfile.write("\n")
-			outfile.write("\n")
+						txt.write("{}\n".format(val))
+						md.write("  * {}\n".format(val))
+					txt.write("\n")
+					md.write("\n")
+			txt.write("\n")
+			md.write("\n")
 
 #######################################################
 
@@ -763,13 +809,18 @@ def ReverseDNSReport(ip, data, output_basename):
 	print
 
 	if output_basename:
-		output = output_basename + ".txt"
-		with open(output, 'a') as outfile:
-			outfile.write("[+] Reverse DNS Lookup\n")
-			outfile.write("----------------------\n")
+		output1 = output_basename + ".txt"
+		output2 = output_basename + ".md"
+		with open(output1, 'a') as txt, open(output2, 'a') as md:
+			txt.write("[+] Reverse DNS Lookup\n")
+			md.write("---\n\n")
+			md.write("## Reverse DNS Lookup\n\n")
+			txt.write("----------------------\n")
 			if data:
-				outfile.write("{}:{}\n".format( ip, data))
-			outfile.write("\n")
+				txt.write("{}:{}\n".format( ip, data))
+				md.write("* {}:{}\n".format( ip, data))
+			txt.write("\n")
+			md.write("\n")
 
 #######################################################
 
@@ -782,13 +833,18 @@ def VHostsReport(data, output_basename):
 	print
 
 	if output_basename:
-		output = output_basename + ".txt"
-		with open(output, 'a') as outfile:
-			outfile.write("[+] Bing Virtual Hosts\n")
-			outfile.write("----------------------\n")
+		output1 = output_basename + ".txt"
+		output2 = output_basename + ".md"
+		with open(output1, 'a') as txt, open(output2, 'a') as md:
+			txt.write("[+] Bing Virtual Hosts\n")
+			md.write("---\n\n")
+			md.write("## Bing Virtual Hosts\n\n")
+			txt.write("----------------------\n")
 			for host in data:
-				outfile.write("{}\n".format(host))
-			outfile.write("\n")
+				txt.write("{}\n".format(host))
+				md.write("* {}\n".format(host))
+			txt.write("\n")
+			md.write("\n")
 
 #######################################################
 
@@ -812,20 +868,29 @@ def FinalReport(info, output_basename):
 	print
 
 	if output_basename:
-		output = output_basename + ".txt"
-		with open(output, 'a') as outfile:
-			outfile.write("[+] Search engines results - Final Report\n")
-			outfile.write("-----------------------------------------\n")
-			outfile.write("\n")
-			outfile.write("Emails:\n")
+		output1 = output_basename + ".txt"
+		output2 = output_basename + ".md"
+		with open(output1, 'a') as txt, open(output2, 'a') as md:
+			txt.write("[+] Search engines results - Final Report\n")
+			md.write("---\n\n")
+			md.write("## Search engines results - Final Report\n")
+			txt.write("-----------------------------------------\n")
+			txt.write("\n")
+			md.write("\n")
+			txt.write("Emails:\n")
+			md.write("### Emails\n\n")
 			for email in info['all_emails']:
-				outfile.write("{}\n".format(email))
-
-			outfile.write("\n")
-			outfile.write("Hostnames:\n")
+				txt.write("{}\n".format(email))
+				md.write("* {}\n".format(email))
+			txt.write("\n")
+			md.write("\n")
+			txt.write("Hostnames:\n")
+			md.write("### Hostnames\n\n")
 			for host in info['all_hosts']:
-				outfile.write("{}\n".format(host))
-			outfile.write("\n")
+				txt.write("{}\n".format(host))
+				md.write("* {}\n".format(host))
+			txt.write("\n")
+			md.write("\n")
 
 #######################################################
 
