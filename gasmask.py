@@ -142,7 +142,28 @@ def WhoisQuery(value):
 
 ## Perform DNS queries ##
 
-def DnsQuery(value, dnsserver):
+def _query(value, dnsserver, record):
+
+	myresolver = dns.resolver.Resolver()
+	myresolver.nameservers = [dnsserver]
+
+	try:
+		answers = myresolver.query(value, record)
+		for answer in answers:
+			if record is 'NS':
+				return answer.to_text() + ":" + VerifyHostname(answer.to_text())
+			elif record is 'MX':
+				domain_name = re.search(' (.*)\.', answer.to_text(), re.IGNORECASE).group(1)
+				return answer.to_text() + ":" + VerifyHostname(domain_name)
+			else:
+				return answer.to_text()
+	except Exception as e:
+		return '-'
+
+	return dnsData
+
+
+def DnsQuery(value, dnsserver, record=None):
 
 	dnsData = {
         "A":[],
@@ -158,22 +179,11 @@ def DnsQuery(value, dnsserver):
         "RP":[]
     }
 
-	myresolver = dns.resolver.Resolver()
-	myresolver.nameservers = [dnsserver]
-
-	for rec in dnsData:
-		try:
-			answers = myresolver.query(value, rec)
-			for answer in answers:
-				if rec is 'NS':
-					dnsData[rec].append(answer.to_text() + ":" + VerifyHostname(answer.to_text()))
-				elif rec is 'MX':
-					domain_name = re.search(' (.*)\.', answer.to_text(), re.IGNORECASE).group(1)
-					dnsData[rec].append(answer.to_text() + ":" + VerifyHostname(domain_name))
-				else:
-					dnsData[rec].append(answer.to_text())
-		except Exception as e:
-			dnsData[rec].append('-')
+	if record is None:
+		for record in dnsData:
+			dnsData[record].append(_query(value, dnsserver, record))
+	else:
+		dnsData[record].append(_query(value, dnsserver, record))
 
 	return dnsData
 
@@ -309,7 +319,8 @@ def CommonSearch(value, urltemplate, quantity, step, limit, uas, proxies, timeou
 	while counter <= limit:
 		try:
 			url = urltemplate.format(quantity=quantity, counter=counter, value=value)
-		 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+		 	s = requests.Session()
+		 	r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
 		 	if r.status_code != 200:
 		 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
 		 		return [], []
@@ -334,7 +345,8 @@ def CommonSearch2(value, urltemplate, step, limit, uas, proxies, timeouts):
 	while counter <= limit:
 		try:
 			url = urltemplate.format(counter=counter, value=value)
-		 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+		 	s = requests.Session()
+		 	r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
 		 	if r.status_code != 200:
 		 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
 		 		return [], []
@@ -420,7 +432,8 @@ def YandexSearch(value, limit, uas, proxies, timeouts):
 	while counter <= limit:
 		try:
 			url = "https://" + server + "/search/?text=%22%40" + value + "%22&numdoc=" + str(quantity) + "&p=" + str(page) + "&lr=10418"
-		 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+		 	s = requests.Session()
+		 	r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
 		 	if r.status_code != 200:
 		 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
 		 		return [], []
@@ -445,7 +458,8 @@ def CrtSearch(value, uas, proxies):
 
 	try:
 		url = "https://" + server + "/?q=%25" + value
-	 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+	 	s = requests.Session()
+	 	r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
 	 	if r.status_code != 200:
 	 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
 	 		return [], []
@@ -466,7 +480,8 @@ def PGPSearch(value, uas, proxies):
 
 	try:
 		url = "https://" + server + "/pks/lookup?search=" + value + "&op=index"
-	 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+	 	s = requests.Session()
+	 	r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
 	 	if r.status_code != 200:
 	 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
 	 		return [], []
@@ -487,7 +502,8 @@ def NetcraftSearch(value, uas, proxies):
 
 	try:
 		url = "https://" + server + "?restriction=site+ends+with&host=" + value
-	 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+	 	s = requests.Session()
+	 	r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
 	 	if r.status_code != 200:
 	 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
 	 		return [], []
@@ -508,7 +524,8 @@ def VTSearch(value, uas, proxies):
 
 	try:
 		url = "https://" + server + "/en/domain/" + value + "/information/"
-	 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+	 	s = requests.Session()
+	 	r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
 	 	if r.status_code != 200:
 	 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
 	 		return [], []
@@ -533,23 +550,12 @@ def SiteSearch(value, site, limit, uas, proxies, timeouts):
 	while counter <= limit:
 		try:
 			url = "https://" + server + "/search?num=" + str(quantity) + "&start=" + str(counter) + "&hl=en&meta=&q=site%3A" + site + "%20%40%22" + value + "%22"
-			r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+			s = requests.Session()
+		 	r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
 			if r.status_code != 200:
 		 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
 		 		return [], []
 		 	results += r.content
-			# s = requests.Session()
-			# s.headers.update({'Host': server})
-			# s.headers.update({'User-Agent': PickRandomUA(uas)})
-			# s.headers.update({'Accept': '*/*'})
-			# s.headers.update({'Accept-Language': 'en-US,en;q=0.5'})
-			# s.headers.update({'Accept-Encoding': 'gzip, deflate'})
-			# s.headers.update({'Connection': 'close'})
-			# r = s.get("https://" + server, verify=False, proxies=proxies)
-			# s.headers.update({'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'})
-			# s.headers.update({'Referer': "https://"+ server + "/"})
-		 	# r = s.get(url, verify=False, proxies=proxies)
-		 	# results += r.content
 		except Exception,e:
 			print e
 
@@ -574,7 +580,8 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
 	while counter <= limit:
 		try:
 			url = "https://" + server + "/search?q=ip%3A" + value + "&go=&count=" + str(quantity) + "&FORM=QBHL&qs=n&first=" + str(counter)
-		 	r = requests.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+		 	s = requests.Session()
+		 	r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
 		 	if r.status_code != 200:
 		 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
 		 		return [], []
@@ -599,33 +606,63 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
 
 ## Emails & Hostnames Console report ##
 
-def TerminalReport(emails, hostnames):
+def Report(engine, emails, hostnames, output_basename):
+
 	print
 	print "Emails:"
 	for email in emails:
 		print email
+
 	print
 	print "Hostnames:"
 	for host in hostnames:
 		print host
 	print
+
+	if output_basename:
+		output = output_basename + ".txt"
+		with open(output, 'a') as outfile:
+			outfile.write("[+] {} results\n".format(engine))
+			outfile.write("-------------------------\n")
+			outfile.write("\n")
+			outfile.write("Emails:\n")
+			for email in emails:
+				outfile.write("{}\n".format(email))
+
+			outfile.write("\n")
+			outfile.write("Hostnames:\n")
+			for host in hostnames:
+				outfile.write("{}\n".format(host))
+			outfile.write("\n")
 
 #######################################################
 
 ## Hostnames Console report ##
 
-def HostnamesTerminalReport(hostnames):
+def HostnamesReport(engine, hostnames, output_basename):
+
 	print
 	print "Hostnames:"
 	for host in hostnames:
 		print host
 	print
 
+	if output_basename:
+		output = output_basename + ".txt"
+		with open(output, 'a') as outfile:
+			outfile.write("[+] {} results\n".format(engine))
+			outfile.write("-------------------------\n")
+			outfile.write("\n")
+			outfile.write("Hostnames:\n")
+			for host in hostnames:
+				outfile.write("{}\n".format(host))
+			outfile.write("\n")
+
 #######################################################
 
 ## Information Console report ##
 
-def InfoTerminalReport(mode, limit, dnsserver, proxy, domain, ip, uas):
+def InfoReport(mode, limit, dnsserver, proxy, domain, ip, uas, output_basename):
 
 	print "[+] Information gathering: {}".format(mode)
 	print "[+] Looking into first {} search engines results".format(limit)
@@ -636,11 +673,24 @@ def InfoTerminalReport(mode, limit, dnsserver, proxy, domain, ip, uas):
 	print "[+] User-agent strings: {}".format(uas)
 	print
 
+	if output_basename:
+		output = output_basename + ".txt"
+		with open(output, 'w') as outfile:
+			outfile.write("{}\n".format(message))
+			outfile.write("[+] Information gathering: {}\n".format(mode))
+			outfile.write("[+] Looking into first {} search engines results\n".format(limit))
+			outfile.write("[+] Using DNS server: {}\n".format(dnsserver))
+			if proxy:
+				outfile.write("[+] Using Proxy server: {}\n".format(proxy))
+			outfile.write("[+] Target: {}:{}\n".format(domain, ip))
+			outfile.write("[+] User-agent strings: {}\n".format(uas))
+			outfile.write("\n")
+
 #######################################################
 
 ## Whois Console report ##
 
-def WhoisTerminalReport(data):
+def WhoisReport(data, output_basename):
 
 	for key,value in data.iteritems():
 		if isinstance(value[0], list):
@@ -653,11 +703,27 @@ def WhoisTerminalReport(data):
 			print value[1] + " " + value[0]
 	print
 
+	if output_basename:
+		output = output_basename + ".txt"
+		with open(output, 'a') as outfile:
+			outfile.write("[+] Whois lookup\n")
+			outfile.write("----------------\n")
+			for key,value in data.iteritems():
+				if isinstance(value[0], list):
+					outfile.write("\n")
+					outfile.write("{}\n".format(value[1]))
+					for val in value[0]:
+						outfile.write("{}\n".format(val))
+					outfile.write("\n")
+				else:
+					outfile.write("{} {}\n".format(value[1], value[0]))
+			outfile.write("\n")
+
 #######################################################
 
 ## DNS Console report ##
 
-def DNSTerminalReport(data):
+def DNSReport(data, output_basename):
 
 	for key,value in data.iteritems():
 		if(len(value) == 1):
@@ -670,33 +736,96 @@ def DNSTerminalReport(data):
 			print
 	print
 
+	if output_basename:
+		output = output_basename + ".txt"
+		with open(output, 'a') as outfile:
+			outfile.write("[+] DNS queries\n")
+			outfile.write("---------------\n")
+			for key,value in data.iteritems():
+				if(len(value) == 1):
+					outfile.write("{} DNS record: {}\n".format(key, value[0]))
+				else:
+					outfile.write("\n")
+					outfile.write("{} DNS record:\n".format(key))
+					for val in value:
+						outfile.write("{}\n".format(val))
+					outfile.write("\n")
+			outfile.write("\n")
+
 #######################################################
 
 ## Reverse DNS Console report ##
 
-def ReverseDNSTerminalReport(ip, data):
+def ReverseDNSReport(ip, data, output_basename):
 
 	if data:
 		print ip + ":" + data
 	print
 
+	if output_basename:
+		output = output_basename + ".txt"
+		with open(output, 'a') as outfile:
+			outfile.write("[+] Reverse DNS Lookup\n")
+			outfile.write("----------------------\n")
+			if data:
+				outfile.write("{}:{}\n".format( ip, data))
+			outfile.write("\n")
+
 #######################################################
 
 ## VHosts Console report ##
 
-def VHostsTerminalReport(data):
+def VHostsReport(data, output_basename):
 
 	for host in data:
 		print host
 	print
 
+	if output_basename:
+		output = output_basename + ".txt"
+		with open(output, 'a') as outfile:
+			outfile.write("[+] Bing Virtual Hosts\n")
+			outfile.write("----------------------\n")
+			for host in data:
+				outfile.write("{}\n".format(host))
+			outfile.write("\n")
+
 #######################################################
 
 ## All major formats final report ##
 
-def AllFormatsReport(info):
+def FinalReport(info, output_basename):
 
-	pass
+	print
+	print "[+] Search engines results - Final Report"
+	print "-----------------------------------------"
+
+	print
+	print "Emails:"
+	for email in info['all_emails']:
+		print email
+
+	print
+	print "Hostnames:"
+	for host in info['all_hosts']:
+		print host
+	print
+
+	if output_basename:
+		output = output_basename + ".txt"
+		with open(output, 'a') as outfile:
+			outfile.write("[+] Search engines results - Final Report\n")
+			outfile.write("-----------------------------------------\n")
+			outfile.write("\n")
+			outfile.write("Emails:\n")
+			for email in info['all_emails']:
+				outfile.write("{}\n".format(email))
+
+			outfile.write("\n")
+			outfile.write("Hostnames:\n")
+			for host in info['all_hosts']:
+				outfile.write("{}\n".format(host))
+			outfile.write("\n")
 
 #######################################################
 
@@ -714,7 +843,7 @@ def MainFunc():
 	user_agent_strings_file = 'common-ua.txt'
 	timeouts = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
-	modes = ['all', 'whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo',
+	modes = ['basic','whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo',
 		'ask', 'dogpile', 'yandex', 'linkedin', 'twitter', 'googleplus', 'youtube', 'reddit',
 		'github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal']
 
@@ -729,7 +858,7 @@ def MainFunc():
 	parser.add_argument("-l", '--limit', action="store", metavar='LIMIT', dest='limit',
 		type=int, default=100, help="Limit the number of search engine results (default: 100).")
 	parser.add_argument("-i", '--info', action="store", metavar='MODE', dest='mode',
-		type=str, default='all', help="Limit information gathering (" + ','.join(modes) + ").")
+		type=str, default='basic', help="Limit information gathering (" + ','.join(modes) + ").")
 	parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',
 		type=str, default=None, help='Output in the four major formats at once (markdown, txt, xml and html).')
 
@@ -753,263 +882,258 @@ def MainFunc():
 		sys.exit()
 
 	output_basename = None
-	if args.basename is not None and os.path.isdir(args.basename):
+	if args.basename is not None:
 		output_basename = args.basename
 
 #######################################################
 
 ## information ##
 
-	info['mode'] = args.mode.lower()
+	info['mode'] = [x.strip() for x in args.mode.lower().split(',')]
 	info['limit'] = args.limit
 	info['dnsserver'] = args.dnsserver
 	info['ip'] = VerifyHostname(info['domain'])
 
 	if args.proxy:
+		print "[+] Proxy will ONLY be used during search engines searches"
 		info['proxies'] = {
 		      'http': args.proxy,
 		      'https': args.proxy,
 		  }
 
-	InfoTerminalReport(info['mode'], info['limit'], info['dnsserver'], args.proxy, info['domain'], info['ip'], len(uas))
+	InfoReport(info['mode'], info['limit'], info['dnsserver'], args.proxy, info['domain'], info['ip'], len(uas), output_basename)
 
 #######################################################
 
 ## Whois query report ##
 
-	if info['mode'] == 'all' or info['mode'] == 'whois':
-		print "[+] Whois lookup:"
-		print "-----------------"
+	if any(i in ['whois', 'basic'] for i in info['mode']):
+		print "[+] Whois lookup"
+		print "----------------"
 		info['whois'] = WhoisQuery(info['domain'])
-		WhoisTerminalReport(info['whois'])
+		WhoisReport(info['whois'], output_basename)
 
 #######################################################
 
 ## DNS records report ##
 
-	if info['mode'] == 'all' or info['mode'] == 'dns':
-		print "[+] DNS queries:"
-		print "----------------"
+	if any(i in ['dns', 'basic'] for i in info['mode']):
+		print "[+] DNS queries"
+		print "---------------"
 		info['dns'] = DnsQuery(info['domain'], info['dnsserver'])
-		DNSTerminalReport(info['dns'])
+		DNSReport(info['dns'], output_basename)
 
 #######################################################
 
 ## IP Reverse DNS lookup report ##
 
-	if info['mode'] == 'all' or info['mode'] == 'revdns':
-		print "[+] Reverse DNS Lookup:"
-		print "-----------------------"
+	if any(i in ['revdns', 'basic'] for i in info['mode']):
+		print "[+] Reverse DNS Lookup"
+		print "----------------------"
 		info['revdns'] = ReverseIPQuery(info['ip'], info['dnsserver'])
-		ReverseDNSTerminalReport(info['ip'], info['revdns'])
+		ReverseDNSReport(info['ip'], info['revdns'], output_basename)
 
 #######################################################
 
 # Bing Virtual Hosts search results report ##
 
-	if info['mode'] == 'all' or info['mode'] == 'vhosts':
-		print "[+] Bing Virtual Hosts:"
-		print "-----------------------"
+	if any(i in ['vhosts', 'basic'] for i in info['mode']):
+		print "[+] Bing Virtual Hosts"
+		print "----------------------"
 		info['bingvhosts'] = BingVHostsSearch(info['ip'], info['limit'], uas, info['proxies'], timeouts)
-		VHostsTerminalReport(info['bingvhosts'])
+		VHostsReport(info['bingvhosts'], output_basename)
 
 #######################################################
 
 ## Google search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'google':
+	if any(i in ['google'] for i in info['mode']):
 		print "[+] Searching in Google.."
 		temp1, temp2 = GoogleSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("Google", temp1, temp2, output_basename)
 
 #######################################################
 
 ## Bing search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'bing':
+	if any(i in ['bing'] for i in info['mode']):
 		print "[+] Searching in Bing.."
 		temp1, temp2 = BingSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("Bing", temp1, temp2, output_basename)
 
 #######################################################
 
 ## Yahoo search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'yahoo':
+	if any(i in ['yahoo'] for i in info['mode']):
 		print "[+] Searching in Yahoo.."
 		temp1, temp2 = YahooSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("Yahoo", temp1, temp2, output_basename)
 
 #######################################################
 
 ## ASK search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'ask':
+	if any(i in ['ask'] for i in info['mode']):
 		print "[+] Searching in ASK.."
 		temp1, temp2 = AskSearch(info['domain'], 5, uas, info['proxies'], timeouts) #5 pages
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("ASK", temp1, temp2, output_basename)
 
 #######################################################
 
 ## Dogpile search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'dogpile':
+	if any(i in ['dogpile'] for i in info['mode']):
 		print "[+] Searching in Dogpile.."
 		temp1, temp2 = DogpileSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("Dogpile", temp1, temp2, output_basename)
 
 #######################################################
 
 ## Yandex search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'yandex':
+	if any(i in ['yandex'] for i in info['mode']):
 		print "[+] Searching in Yandex.."
 		temp1, temp2 = YandexSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("Yandex", temp1, temp2, output_basename)
 
 #######################################################
 
 ## crt search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'crt':
+	if any(i in ['crt'] for i in info['mode']):
 		print "[+] Searching in Crt.."
 		temp = CrtSearch(info['domain'], uas, info['proxies'])
 		info['all_hosts'].extend(temp)
-		HostnamesTerminalReport(temp)
+		HostnamesReport("CRT", temp, output_basename)
 
 #######################################################
 
 ## PGP search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'pgp':
+	if any(i in ['pgp'] for i in info['mode']):
 		print "[+] Searching in PGP.."
 		temp1, temp2 = PGPSearch(info['domain'], uas, info['proxies'])
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("PGP", temp1, temp2, output_basename)
 
 #######################################################
 
 ## netcraft search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'netcraft':
+	if any(i in ['netcraft'] for i in info['mode']):
 		print "[+] Searching in Netcraft.."
 		temp = NetcraftSearch(info['domain'], uas, info['proxies'])
 		info['all_hosts'].extend(temp)
-		HostnamesTerminalReport(temp)
+		HostnamesReport("Netcraft", temp, output_basename)
 
 #######################################################
 
 ## virustotal search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'virustotal':
+	if any(i in ['virustotal'] for i in info['mode']):
 		print "[+] Searching in VirusTotal.."
 		temp = VTSearch(info['domain'], uas, info['proxies'])
 		info['all_hosts'].extend(temp)
-		HostnamesTerminalReport(temp)
+		HostnamesReport("VirusTotal", temp, output_basename)
 
 #######################################################
 
 ## LinkedIn search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'linkedin':
+	if any(i in ['linkedin'] for i in info['mode']):
 		print "[+] Searching in LinkedIn.."
 		temp1, temp2 = SiteSearch(info['domain'], 'linkedin.com', info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("LinkedIn", temp1, temp2, output_basename)
 
 #######################################################
 
 ## Twitter search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'twitter':
+	if any(i in ['twitter'] for i in info['mode']):
 		print "[+] Searching in Twitter.."
 		temp1, temp2 = SiteSearch(info['domain'], "twitter.com", info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("Twitter", temp1, temp2, output_basename)
 
 #######################################################
 
 ## Google+ search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'googleplus':
+	if any(i in ['googleplus'] for i in info['mode']):
 		print "[+] Searching in Google+.."
 		temp1, temp2 = SiteSearch(info['domain'], "plus.google.com", info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("Google+", temp1, temp2, output_basename)
 
 #######################################################
 
 ## Youtube search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'youtube':
+	if any(i in ['youtube'] for i in info['mode']):
 		print "[+] Searching in Youtube.."
 		temp1, temp2 = SiteSearch(info['domain'], "youtube.com", info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("Youtube", temp1, temp2, output_basename)
 
 #######################################################
 
 ## Reddit search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'reddit':
+	if any(i in ['reddit'] for i in info['mode']):
 		print "[+] Searching in Reddit.."
 		temp1, temp2 = SiteSearch(info['domain'], "reddit.com", info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("Reddit", temp1, temp2, output_basename)
 
 #######################################################
 
 ## Github search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'github':
+	if any(i in ['github'] for i in info['mode']):
 		print "[+] Searching in Github.."
 		temp1, temp2 = SiteSearch(info['domain'], "github.com", info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("Github", temp1, temp2, output_basename)
 
 #######################################################
 
 ## Instagram search ##
 
-	if info['mode'] == 'all' or info['mode'] == 'instagram':
+	if any(i in ['instagram'] for i in info['mode']):
 		print "[+] Searching in Instagram.."
 		temp1, temp2 = SiteSearch(info['domain'], "instagram.com", info['limit'], uas, info['proxies'], timeouts)
 		info['all_emails'].extend(temp1)
 		info['all_hosts'].extend(temp2)
-		TerminalReport(temp1, temp2)
+		Report("Instagram", temp1, temp2, output_basename)
 
 #######################################################
 
 ## Search Results Final Report ##
 
-	print
-	print "[+] Search engines results - Final Report:"
-	print "------------------------------------------"
 	info['all_emails'] = sorted(set(info['all_emails']))
 	info['all_hosts'] = sorted(set(info['all_hosts']))
-	TerminalReport(info['all_emails'], info['all_hosts'])
-
-	if output_basename:
-		AllFormatsReport(info)
+	FinalReport(info, output_basename)
 
 #######################################################
 

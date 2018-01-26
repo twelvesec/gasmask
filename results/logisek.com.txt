@@ -1,0 +1,32 @@
+
+   ______           __  ___           __ __
+  / ____/___ ______/  |/  /___ ______/ //_/
+ / / __/ __ `/ ___/ /|_/ / __ `/ ___/ ,<
+/ /_/ / /_/ (__  ) /  / / /_/ (__  ) /| |
+\____/\__,_/____/_/  /_/\__,_/____/_/ |_|
+
+GasMasK - All in one Information gathering tool - OSINT
+Ver. 1.0
+Written by: @maldevel
+https://www.twelvesec.com/
+
+[+] Information gathering: bing
+[+] Looking into first 100 search engines results
+[+] Using DNS server: 8.8.8.8
+[+] Target: logisek.com:94.130.200.181
+[+] User-agent strings: 76
+
+[+] Bing results
+-------------------------
+
+Emails:
+
+Hostnames:
+
+[+] Search engines results - Final Report
+-----------------------------------------
+
+Emails:
+
+Hostnames:
+
