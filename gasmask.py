@@ -622,27 +622,44 @@ def Report(engine, emails, hostnames, output_basename):
 	if output_basename:
 		output1 = output_basename + ".txt"
 		output2 = output_basename + ".md"
-		with open(output1, 'a') as txt, open(output2, 'a') as md:
+		output3 = output_basename + ".xml"
+
+		with open(output1, 'a') as txt, open(output2, 'a') as md, open(output3, 'a') as xml:
 			txt.write("[+] {} results\n".format(engine))
+			txt.write("-------------------------\n")
 			md.write("---\n\n")
 			md.write("## {} results\n".format(engine))
-			txt.write("-------------------------\n")
+			xml.write("<{}Results>\n".format(engine))
+
 			txt.write("\n")
 			md.write("\n")
+
 			txt.write("Emails:\n")
 			md.write("### Emails\n\n")
+			xml.write("<Emails>\n")
+
 			for email in emails:
 				txt.write("{}\n".format(email))
 				md.write("* {}\n".format(email))
+				xml.write("<email>{}</email>\n".format(email))
+
+			xml.write("</Emails>\n")
 			txt.write("\n")
 			md.write("\n")
+
 			txt.write("Hostnames:\n")
 			md.write("### Hostnames\n\n")
+			xml.write("<Hostnames>\n")
+
 			for host in hostnames:
 				txt.write("{}\n".format(host))
 				md.write("* {}\n".format(host))
+				xml.write("<hostname>{}</hostname>\n".format(host))
+
+			xml.write("</Hostnames>\n")
 			txt.write("\n")
 			md.write("\n")
+			xml.write("</{}Results>\n".format(engine))
 
 #######################################################
 
@@ -659,20 +676,31 @@ def HostnamesReport(engine, hostnames, output_basename):
 	if output_basename:
 		output1 = output_basename + ".txt"
 		output2 = output_basename + ".md"
-		with open(output1, 'a') as txt, open(output2, 'a') as md:
+		output3 = output_basename + ".xml"
+
+		with open(output1, 'a') as txt, open(output2, 'a') as md, open(output3, 'a') as xml:
 			txt.write("[+] {} results\n".format(engine))
+			txt.write("-------------------------\n")
 			md.write("---\n\n")
 			md.write("## {} results\n".format(engine))
-			txt.write("-------------------------\n")
+			xml.write("<{}Results>\n".format(engine))
+
 			txt.write("\n")
 			md.write("\n")
+
 			txt.write("Hostnames:\n")
 			md.write("### Hostnames\n\n")
+			xml.write("<Hostnames>\n")
+
 			for host in hostnames:
 				txt.write("{}\n".format(host))
 				md.write("* {}\n".format(host))
+				xml.write("<hostname>{}</hostname>\n".format(host))
+
+			xml.write("</Hostnames>\n")
 			txt.write("\n")
 			md.write("\n")
+			xml.write("</{}Results>\n".format(engine))
 
 #######################################################
 
@@ -692,27 +720,52 @@ def InfoReport(mode, limit, dnsserver, proxy, domain, ip, uas, output_basename):
 	if output_basename:
 		output1 = output_basename + ".txt"
 		output2 = output_basename + ".md"
-		with open(output1, 'w') as txt, open(output2, 'w') as md:
+		output3 = output_basename + ".xml"
+
+		with open(output1, 'w') as txt, open(output2, 'w') as md, open(output3, 'w') as xml:
 			txt.write("{}\n".format(message))
 			md.write("```\n")
 			md.write("{}\n".format(message))
 			md.write("```\n\n")
-			txt.write("[+] Information gathering: {}\n".format(mode))
+			xml.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+			xml.write("<report>\n")
+			xml.write("<information>\n")
+
+			txt.write("[+] Information gathering: {}\n".format(",".join(mode)))
 			md.write("---\n\n")
-			md.write("* Information gathering: {}\n".format(mode))
-			txt.write("[+] Looking into first {} search engines results\n".format(limit))
-			md.write("* Looking into first {} search engines results\n".format(limit))
+			md.write("* Information gathering: {}\n".format(",".join(mode)))
+			xml.write("<InformationGathering>\n")
+			for m in mode:
+				xml.write("<query>{}</query>\n".format(m))
+			xml.write("</InformationGathering>\n")
+
+			txt.write("[+] Looking into first {} search engine results\n".format(limit))
+			md.write("* Looking into first {} search engine results\n".format(limit))
+			xml.write("<SearchEngineResults>{}</SearchEngineResults>\n".format(limit))
+
 			txt.write("[+] Using DNS server: {}\n".format(dnsserver))
 			md.write("* Using DNS server: {}\n".format(dnsserver))
+			xml.write("<DNSServer>{}</DNSServer>\n".format(dnsserver))
+
 			if proxy:
 				txt.write("[+] Using Proxy server: {}\n".format(proxy))
 				md.write("* Using Proxy server: {}\n".format(proxy))
+				xml.write("<ProxyServer>{}</ProxyServer>\n".format(proxy))
+
 			txt.write("[+] Target: {}:{}\n".format(domain, ip))
 			md.write("* Target: {}:{}\n".format(domain, ip))
+			xml.write("<Target>\n")
+			xml.write("<Domain>{}</Domain>\n".format(domain))
+			xml.write("<IP>{}</IP>\n".format(ip))
+			xml.write("</Target>\n")
+
 			txt.write("[+] User-agent strings: {}\n".format(uas))
 			md.write("* User-agent strings: {}\n".format(uas))
+			xml.write("<UserAgentStrings>{}</UserAgentStrings>\n".format(uas))
+
 			txt.write("\n")
 			md.write("\n")
+			xml.write("</information>\n")
 
 #######################################################
 
@@ -734,27 +787,41 @@ def WhoisReport(data, output_basename):
 	if output_basename:
 		output1 = output_basename + ".txt"
 		output2 = output_basename + ".md"
-		with open(output1, 'a') as txt, open(output2, 'a') as md:
+		output3 = output_basename + ".xml"
+
+		with open(output1, 'a') as txt, open(output2, 'a') as md, open(output3, 'a') as xml:
 			txt.write("[+] Whois lookup\n")
+			txt.write("----------------\n")
 			md.write("---\n\n")
 			md.write("## Whois lookup\n\n")
-			txt.write("----------------\n")
+			xml.write("<Whois>\n")
+
 			for key,value in data.iteritems():
 				if isinstance(value[0], list):
 					txt.write("\n")
 					md.write("\n")
+
 					txt.write("{}\n".format(value[1]))
 					md.write("* {}\n".format(value[1]))
+					xml.write("<{}>\n".format(key))
+
 					for val in value[0]:
 						txt.write("{}\n".format(val))
 						md.write("  * {}\n".format(val))
+						xml.write("<data>{}</data>\n".format(val))
+
+					xml.write("</{}>\n".format(key))
+
 					txt.write("\n")
 					md.write("\n")
 				else:
 					txt.write("{} {}\n".format(value[1], value[0]))
 					md.write("* {} {}\n".format(value[1], value[0]))
+					xml.write("<{}>{}</{}>\n".format(key, value[0], key))
+
 			txt.write("\n")
 			md.write("\n")
+			xml.write("</Whois>\n")
 
 #######################################################
 
@@ -776,27 +843,41 @@ def DNSReport(data, output_basename):
 	if output_basename:
 		output1 = output_basename + ".txt"
 		output2 = output_basename + ".md"
-		with open(output1, 'a') as txt, open(output2, 'a') as md:
+		output3 = output_basename + ".xml"
+
+		with open(output1, 'a') as txt, open(output2, 'a') as md, open(output3, 'a') as xml:
 			txt.write("[+] DNS queries\n")
+			txt.write("---------------\n")
 			md.write("---\n\n")
 			md.write("## DNS queries\n\n")
-			txt.write("---------------\n")
+			xml.write("<DNSQueries>\n")
+
 			for key,value in data.iteritems():
 				if(len(value) == 1):
 					txt.write("{} DNS record: {}\n".format(key, value[0]))
 					md.write("* {} DNS record: {}\n".format(key, value[0]))
+					xml.write("<{}>{}</{}>\n".format(key, value[0], key))
+
 				else:
 					txt.write("\n")
 					md.write("\n")
+
 					txt.write("{} DNS record:\n".format(key))
 					md.write("* {} DNS record:\n".format(key))
+					md.write("<{}>\n".format(key))
+
 					for val in value:
 						txt.write("{}\n".format(val))
 						md.write("  * {}\n".format(val))
+						md.write("<data>{}</data>\n".format(val))
+
+					md.write("</{}>\n".format(key))
 					txt.write("\n")
 					md.write("\n")
+
 			txt.write("\n")
 			md.write("\n")
+			xml.write("</DNSQueries>\n")
 
 #######################################################
 
@@ -811,16 +892,24 @@ def ReverseDNSReport(ip, data, output_basename):
 	if output_basename:
 		output1 = output_basename + ".txt"
 		output2 = output_basename + ".md"
-		with open(output1, 'a') as txt, open(output2, 'a') as md:
+		output3 = output_basename + ".xml"
+
+		with open(output1, 'a') as txt, open(output2, 'a') as md, open(output3, 'a') as xml:
 			txt.write("[+] Reverse DNS Lookup\n")
+			txt.write("----------------------\n")
 			md.write("---\n\n")
 			md.write("## Reverse DNS Lookup\n\n")
-			txt.write("----------------------\n")
+			xml.write("<ReverseDNSLookup>\n")
+
 			if data:
-				txt.write("{}:{}\n".format( ip, data))
-				md.write("* {}:{}\n".format( ip, data))
+				txt.write("{}:{}\n".format(ip, data))
+				md.write("* {}:{}\n".format(ip, data))
+				xml.write("<IP>{}</IP>\n".format(ip))
+				xml.write("<Domain>{}</Domain>\n".format(data))
+
 			txt.write("\n")
 			md.write("\n")
+			xml.write("</ReverseDNSLookup>\n")
 
 #######################################################
 
@@ -835,16 +924,23 @@ def VHostsReport(data, output_basename):
 	if output_basename:
 		output1 = output_basename + ".txt"
 		output2 = output_basename + ".md"
-		with open(output1, 'a') as txt, open(output2, 'a') as md:
+		output3 = output_basename + ".xml"
+
+		with open(output1, 'a') as txt, open(output2, 'a') as md, open(output3, 'a') as xml:
 			txt.write("[+] Bing Virtual Hosts\n")
+			txt.write("----------------------\n")
 			md.write("---\n\n")
 			md.write("## Bing Virtual Hosts\n\n")
-			txt.write("----------------------\n")
+			xml.write("<BingVHosts>\n")
+
 			for host in data:
 				txt.write("{}\n".format(host))
 				md.write("* {}\n".format(host))
+				xml.write("<host>{}</host>\n".format(host))
+
 			txt.write("\n")
 			md.write("\n")
+			xml.write("</BingVHosts>\n")
 
 #######################################################
 
@@ -870,27 +966,44 @@ def FinalReport(info, output_basename):
 	if output_basename:
 		output1 = output_basename + ".txt"
 		output2 = output_basename + ".md"
-		with open(output1, 'a') as txt, open(output2, 'a') as md:
+		output3 = output_basename + ".xml"
+
+		with open(output1, 'a') as txt, open(output2, 'a') as md, open(output3, 'a') as xml:
 			txt.write("[+] Search engines results - Final Report\n")
+			txt.write("-----------------------------------------\n")
 			md.write("---\n\n")
 			md.write("## Search engines results - Final Report\n")
-			txt.write("-----------------------------------------\n")
+			xml.write("<FinalReport>\n")
+
 			txt.write("\n")
 			md.write("\n")
+
 			txt.write("Emails:\n")
 			md.write("### Emails\n\n")
+			xml.write("<Emails>\n")
+
 			for email in info['all_emails']:
 				txt.write("{}\n".format(email))
 				md.write("* {}\n".format(email))
+				xml.write("<email>{}</email>\n".format(email))
+
+			xml.write("</Emails>\n")
 			txt.write("\n")
 			md.write("\n")
+
 			txt.write("Hostnames:\n")
 			md.write("### Hostnames\n\n")
+			xml.write("<Hostnames>\n")
+
 			for host in info['all_hosts']:
 				txt.write("{}\n".format(host))
 				md.write("* {}\n".format(host))
+				xml.write("<hostname>{}</hostname>\n".format(host))
+
+			xml.write("</Hostnames>\n")
 			txt.write("\n")
 			md.write("\n")
+			xml.write("</FinalReport>\n")
 
 #######################################################
 
@@ -1199,6 +1312,16 @@ def MainFunc():
 	info['all_emails'] = sorted(set(info['all_emails']))
 	info['all_hosts'] = sorted(set(info['all_hosts']))
 	FinalReport(info, output_basename)
+
+#######################################################
+
+## Close tags for xml and html ##
+
+	if output_basename:
+		output = output_basename + ".xml"
+
+		with open(output, 'a') as xml:
+			xml.write("</report>\n")
 
 #######################################################
 
