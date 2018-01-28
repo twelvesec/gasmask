@@ -32,6 +32,14 @@ Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.c
 
 ---
 
+### Dependencies
+
+```
+pip2 install -r requirements.txt
+```
+
+---
+
 ### Usage
 
 ```
