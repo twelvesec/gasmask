@@ -6,6 +6,14 @@ Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.c
 
 ---
 
+### Dependencies
+
+* Python 2.x
+* validators
+* python-whois
+* dnspython
+* requests
+
 ### Information Gathering
 
 * ask
@@ -35,7 +43,7 @@ Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.c
 ### Dependencies
 
 ```
-pip2 install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ---
