@@ -75,7 +75,7 @@ optional arguments:
                         Use a proxy server when retrieving results from search engines (eg. '-x http://127.0.0.1:8080')
   -l LIMIT, --limit LIMIT
                         Limit the number of search engine results (default: 100)                                                          .
-  -i MODE, --info MODE  Limit information gathering (basic,whois,dns,revdns,vhos                                                          ts,google,bing,yahoo,ask,dogpile,yandex,linkedin,twitter,googleplus,youtube,reddit,github,instagram,crt,pgp,netcraft,virustotal).
+  -i MODE, --info MODE  Limit information gathering (basic,whois,dns,revdns,vhosts,google,bing,yahoo,ask,dogpile,yandex,linkedin,twitter,googleplus,youtube,reddit,github,instagram,crt,pgp,netcraft,virustotal,dnsdump).
   -o BASENAME, --output BASENAME
                         Output in the four major formats at once (markdown, txt, xml and html).
 
@@ -86,7 +86,9 @@ optional arguments:
 ### Usage Examples
 
 ```
-python gasmask.py -d example.com
+python gasmask.py -d example.com -i basic
+
+python gasmask.py -d example.com -i dnsdump
 
 python gasmask.py -d example.com -i whois,dns,revdns
 
@@ -99,5 +101,6 @@ python gasmask.py -d example.com -i basic,yahoo,github -o myresults/example_com_
 
 * [EmailHarvester](https://github.com/maldevel/EmailHarvester)
 * [theHarvester](https://github.com/laramies/theHarvester)
+* [Sublist3r](https://github.com/aboul3la/Sublist3r)
 
 ---
