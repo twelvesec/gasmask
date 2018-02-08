@@ -285,6 +285,33 @@ def GetHostnamesAll(results):
 
 #######################################################
 
+## Get All Hostnames ##
+
+def GetDNSDumpsterHostnames(value, results):
+
+	tbl_regex = re.compile('<a name="hostanchor"><\/a>Host Records.*?<table.*?>(.*?)</table>', re.S)
+	link_regex = re.compile('<td class="col-md-4">(.*?)<br>', re.S)
+	links = []
+	subdomains=[]
+
+	try:
+		results_tbl = tbl_regex.findall(results)[0]
+	except IndexError:
+		results_tbl = ''
+	links_list = link_regex.findall(results_tbl)
+	links = list(set(links_list))
+
+	for link in links:
+		subdomain = link.strip()
+		if not subdomain.endswith(value):
+			continue
+		if subdomain and subdomain not in subdomains and subdomain != value:
+			subdomains.append(subdomain.strip())
+
+	return sorted(set(subdomains))
+
+#######################################################
+
 ## Pick random User-Agent string ##
 
 def PickRandomUA(value):
@@ -468,6 +495,41 @@ def CrtSearch(value, uas, proxies):
 		print e
 
 	return GetHostnames(results, value)
+
+#######################################################
+
+## DNSdumpster search ##
+
+def DNSDumpsterSearch(value, uas, proxies):
+
+	server = "dnsdumpster.com"
+	results = ""
+	timeout = 25
+
+	try:
+		url = "https://" + server + "/"
+	 	s = requests.Session()
+	 	myheaders={'User-Agent': PickRandomUA(uas), 'Referer': 'https://dnsdumpster.com'}
+	 	r = s.get(url, verify=False, headers=myheaders, proxies=proxies, timeout=timeout)
+	 	if r.status_code != 200:
+	 		print "[-] Something is going wrong (status code: {})".format(r.status_code)
+	 		return [], []
+
+ 		# get csrf token
+ 		csrf_regex = re.compile("<input type='hidden' name='csrfmiddlewaretoken' value='(.*?)' />", re.S)
+ 		token = csrf_regex.findall(r.content)[0]
+ 		token = token.strip()
+
+ 		params = {'csrfmiddlewaretoken': token, 'targetip': value}
+ 		pr = s.post(url, verify=False, headers=myheaders, proxies=proxies, data=params, timeout=timeout)
+ 		if pr.status_code != 200:
+	 		print "[-] Something is going wrong (status code: {})".format(pr.status_code)
+	 		return [], []
+
+	except Exception,e:
+		print e
+
+	return GetDNSDumpsterHostnames(value, pr.content)
 
 #######################################################
 
@@ -1077,7 +1139,7 @@ def MainFunc():
 
 	modes = ['basic','whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo',
 		'ask', 'dogpile', 'yandex', 'linkedin', 'twitter', 'googleplus', 'youtube', 'reddit',
-		'github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal']
+		'github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal', 'dnsdump']
 
 	parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
@@ -1250,6 +1312,16 @@ def MainFunc():
 		temp = CrtSearch(info['domain'], uas, info['proxies'])
 		info['all_hosts'].extend(temp)
 		HostnamesReport("CRT", temp, output_basename)
+
+#######################################################
+
+## dnsdumpster search ##
+
+	if any(i in ['dnsdump'] for i in info['mode']):
+		print "[+] Searching in DNSdumpster.."
+		temp = DNSDumpsterSearch(info['domain'], uas, info['proxies'])
+		info['all_hosts'].extend(temp)
+		HostnamesReport("DNSdumpster", temp, output_basename)
 
 #######################################################
 
