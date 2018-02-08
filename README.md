@@ -43,7 +43,7 @@ Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.c
 ### Dependencies
 
 ```
-pip install -r requirements.txt
+sudo pip install -r requirements.txt
 ```
 
 ---
