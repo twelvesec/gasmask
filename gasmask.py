@@ -672,7 +672,7 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
 
 def ShodanSearch(domain):
     
-    SHODAN_API_KEY = "uFwZYGROZZyK2PZMoWixGEaW1zoERmtc"
+    SHODAN_API_KEY = ""
     api = shodan.Shodan(SHODAN_API_KEY)
             
     # Wrap the request in a try/ except block to catch errors
