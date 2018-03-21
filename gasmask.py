@@ -670,10 +670,9 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
 
 ## Shodan Search ##
 
-def ShodanSearch(domain):
+def ShodanSearch(domain, api_key):
     
-    SHODAN_API_KEY = ""
-    api = shodan.Shodan(SHODAN_API_KEY)
+    api = shodan.Shodan(api_key)
             
     # Wrap the request in a try/ except block to catch errors
     try:
@@ -820,108 +819,51 @@ def ShodanReport(results, output_basename):
                 ip = result['ip_str']
                 hostnames = ','.join(result['hostnames'])
                 organization = result.get('org','n/a')
-                operating_system = result.get('os','n/a')
+                os = result.get('os','n/a')
                 port = result['port']
                 banner = result['data']
             
                 # Print IP
-                txt.write("IP:\n")
-                md.write("### IP\n\n")
-                xml.write("<IP>\n")
-                html.write("<h4>IP</h4>\n<ul>\n")
-
-                txt.write("{}\n".format(ip))
-                md.write("* {}\n".format(ip))
-                xml.write("<ip>{}</ip>\n".format(ip))
-                html.write("<li>{}</li>\n".format(ip))
-
-                html.write("</ul>\n")
-                xml.write("</IP>\n")
-                txt.write("\n")
-                md.write("\n")
+                PrintField("IP", ip, txt, md, xml, html)
 
                 # Print Hostnames
-                txt.write("Hostnames:\n")
-                md.write("### Hostnames\n\n")
-                xml.write("<Hostnames>\n")
-                html.write("<h4>Hostnames</h4>\n<ul>\n")
-
-                txt.write("{}\n".format(hostnames))
-                md.write("* {}\n".format(hostnames))
-                xml.write("<Hostnames>{}</Hostnames>\n".format(hostnames))
-                html.write("<li>{}</li>\n".format(hostnames))
-
-                html.write("</ul>\n")
-                xml.write("</Hostnames>\n")
-                txt.write("\n")
-                md.write("\n")
-
+                PrintField("Hostnames", hostnames, txt, md, xml, html)
+                
                 # Print Organization
-                txt.write("Organization:\n")
-                md.write("### Organization\n\n")
-                xml.write("<Organization>\n")
-                html.write("<h4>Organization</h4>\n<ul>\n")
-
-                txt.write("{}\n".format(organization))
-                md.write("* {}\n".format(organization))
-                xml.write("<Organization>{}</Organization>\n".format(organization))
-                html.write("<li>{}</li>\n".format(organization))
-
-                html.write("</ul>\n")
-                xml.write("</Organization>\n")
-                txt.write("\n")
-                md.write("\n")
+                PrintField("Organization", organization, txt, md, xml, html)
 
                 # Print Operating System
-                txt.write("OS:\n")
-                md.write("### OS\n\n")
-                xml.write("<OS>\n")
-                html.write("<h4>OS</h4>\n<ul>\n")
-
-                txt.write("{}\n".format(os))
-                md.write("* {}\n".format(os))
-                xml.write("<OS>{}</OS>\n".format(os))
-                html.write("<li>{}</li>\n".format(os))
-
-                html.write("</ul>\n")
-                xml.write("</OS>\n")
-                txt.write("\n")
-                md.write("\n")
-
+                PrintField("OS", os, txt, md, xml, html)
+                
                 # Print Port
-                txt.write("Port:\n")
-                md.write("### Port\n\n")
-                xml.write("<Port>\n")
-                html.write("<h4>Port</h4>\n<ul>\n")
-
-                txt.write("{}\n".format(port))
-                md.write("* {}\n".format(port))
-                xml.write("<Port>{}</Port>\n".format(port))
-                html.write("<li>{}</li>\n".format(port))
-
-                html.write("</ul>\n")
-                xml.write("</Port>\n")
-                txt.write("\n")
-                md.write("\n")
-
+                PrintField("Port", port, txt, md, xml, html)
+                
                 # Print Banner
-                txt.write("Banner:\n")
-                md.write("### Banner\n\n")
-                xml.write("<Banner>\n")
-                html.write("<h4>Banner</h4>\n<ul>\n")
-
-                txt.write("{}\n".format(banner))
-                md.write("* {}\n".format(banner))
-                xml.write("<Banner>{}</Banner>\n".format(banner))
-                html.write("<li>{}</li>\n".format(banner))
-
-                html.write("</ul>\n")
-                xml.write("</Banner>\n")
-                txt.write("\n")
-                md.write("\n")
-            
+                PrintField("Banner", banner, txt, md, xml, html)                
+                
             xml.write("</{}Results>\n".format(engine))
             
+#######################################################
+
+## Print field to output files
+
+def PrintField(label, value, txt, md, xml, html):
+    
+    txt.write("{}:\n".format(label))
+    md.write("### {}\n\n".format(label))
+    xml.write("<{}>\n".format(label))
+    html.write("<h4>{}</h4>\n<ul>\n".format(label))
+
+    txt.write("{}\n".format(value))
+    md.write("* {}\n".format(value))
+    xml.write("<{}>{}</{}>\n".format(label,value,label))
+    html.write("<li>{}</li>\n".format(value))
+
+    html.write("</ul>\n")
+    xml.write("</{}>\n".format(label))
+    txt.write("\n")
+    md.write("\n")
+
 #######################################################
 
 ## Hostnames Console report ##
@@ -1346,7 +1288,10 @@ def MainFunc():
         type=str, default='basic', help="Limit information gathering (" + ','.join(modes) + ").")
     parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',
         type=str, default=None, help='Output in the four major formats at once (markdown, txt, xml and html).')
+    parser.add_argument('-k', '--shodan-key', action='store', metavar='API-KEY', dest='shodankey',
+        type=str, default=None, help='API key to use with Shodan search (MODE="shodan")')
 
+    
     if len(sys.argv) is 1:
         parser.print_help()
         sys.exit()
@@ -1466,10 +1411,17 @@ def MainFunc():
 ## Shodan search ##
 
     if any(i in ['shodan'] for i in info['mode']):
+
+            # pdb.set_trace()
+
+            if args.shodankey is None:
+                print("[-] API key required for the Shodan search: '-k API-KEY, --shodan-key API-KEY'")
+                sys.exit()
+            
             print "[+] Shodan search.."
             print "-------------------"
 
-            results = ShodanSearch(info['domain'])
+            results = ShodanSearch(info['domain'], args.shodankey)
             ShodanReport(results, output_basename)
                
 #######################################################
