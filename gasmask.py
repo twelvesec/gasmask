@@ -687,6 +687,55 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
 
     return sorted(set(vhosts))
 
+
+#######################################################
+
+## Subdomains with Censys ##
+
+def CensysReport(engine, subdomains, output_basename):
+    if len(subdomains) is 0:
+        print('[-] Did not find any subdomain')
+        return
+ 
+    print('[*] Found %d subdomains' % (len(subdomains)))
+    print('')
+    for subdomain in subdomains:
+        print(subdomain) 
+    print('')
+    
+    if output_basename:
+        output1 = output_basename + ".txt"
+        output2 = output_basename + ".md"
+        output3 = output_basename + ".xml"
+        output4 = output_basename + ".html"
+
+        with open(output1, 'a') as txt, open(output2, 'a') as md, open(output3, 'a') as xml, open(output4, 'a') as html:
+            txt.write("[+] {} results\n".format(engine))
+            txt.write("-------------------------\n")
+            md.write("---\n\n")
+            md.write("## {} results\n".format(engine))
+            xml.write("<{}Results>\n".format(engine))
+            html.write("<h3>{} results</h3>\n".format(engine))
+
+            txt.write("\n")
+            md.write("\n")
+
+            txt.write("Subdomains:\n")
+            md.write("### Subdomains\n\n")
+            xml.write("<Subdomains>\n")
+            html.write("<h4>Subdomains</h4>\n<ul>\n")
+
+            for email in emails:
+                txt.write("{}\n".format(email))
+                md.write("* {}\n".format(email))
+                xml.write("<Subdomain>{}</Subdomains>\n".format(email))
+                html.write("<li>{}</li>\n".format(email))
+
+            html.write("</ul>\n")
+            xml.write("</Subdomains>\n")
+            txt.write("\n")
+            md.write("\n")
+
 #######################################################
 
 ## Emails & Hostnames Console report ##
@@ -1169,17 +1218,19 @@ def MainFunc():
     parser.add_argument("-l", '--limit', action="store", metavar='LIMIT', dest='limit',type=int, default=100, help="Limit the number of search engine results (default: 100).")
     parser.add_argument("-i", '--info', action="store", metavar='MODE', dest='mode',type=str, default='basic', help="Limit information gathering (" + ','.join(modes) + ").")
     parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',type=str, default=None, help='Output in the four major formats at once (markdown, txt, xml and html).')
-    parser.add_argument('--censys-api-id',action='store', dest='censys_api_id',type=str, default=None, help='Provide the authentication ID for the censys.io search engine')
-    parser.add_argument('--censys-api-secret',action='store', dest='censys_api_secret',type=str, default=None, help='Provide the secret hash for the censys.io search engine')
+    parser.add_argument('-c', '--censys_api_id', action='store', metavar='CENSYS_API_ID', dest='censys_api_id',type=str, default=None, help='Provide the authentication ID for the censys.io search engine')
+    parser.add_argument('-y', '--censys_api_secret', action='store', metavar='CENSYS_API_SECRET', dest='censys_api_secret',type=str, default=None, help='Provide the secret hash for the censys.io search engine')
 
     if len(sys.argv) is 1:
         parser.print_help()
         sys.exit()
 
     args = parser.parse_args()
-
     info['domain'] = args.domain
     info['proxies'] = {}
+    info['censys_api_id'] = {} 
+    info['censys_api_secret'] = {}
+    
 
 #######################################################
 
@@ -1203,7 +1254,8 @@ def MainFunc():
     info['limit'] = args.limit
     info['dnsserver'] = args.dnsserver
     info['ip'] = VerifyHostname(info['domain'])
-
+    
+    
     if args.proxy:
         print "[+] Proxy will ONLY be used during search engines searches"
         info['proxies'] = {
@@ -1446,13 +1498,23 @@ def MainFunc():
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Instagram", temp1, temp2, output_basename)
+        
+#######################################################
+
+## Censys.io search ##
+
+    if any(i in ['censys'] for i in info['mode']):
+        print "[+] Searching in Censys.io.."
+        subdomains = CensysSearch(info['domain'], args.censys_api_id , args.censys_api_secret)
+        CensysReport('Censys', subdomains, output_basename)
 
 #######################################################
 
 ## Search Results Final Report ##
-
+    
     info['all_emails'] = sorted(set(info['all_emails']))
     info['all_hosts'] = sorted(set(info['all_hosts']))
+    #info['domain'] = sorted(set(info['domain']))
     FinalReport(info, output_basename)
 
 #######################################################
@@ -1466,20 +1528,8 @@ def MainFunc():
         with open(output, 'a') as xml, open(output1, 'a') as html:
             xml.write("</report>\n")
             html.write("</body></html>\n")
-
+            
 #######################################################
-
-## Censys.io search ##
-
-    if any(i in ['censys'] for i in info['mode']):
-        print "[+] Searching in Censys.io.."
-        temp1 = CensysSearch(info['domain'], info['censys_api_id'], info['censys_api_secret'])
-        info['domain'].extend(temp1)
-        #info['all_hosts'].extend(temp2)
-        #Report("Censys", temp2, output_basename)
-
-#######################################################
-
 
 if __name__ == '__main__':
 
