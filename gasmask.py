@@ -634,7 +634,7 @@ def SiteSearch(value, site, limit, uas, proxies, timeouts):
 def CensysSearch(value, api_id, api_secret):
     try:
         censys_certificates = censys.certificates.CensysCertificates(api_id=api_id, api_secret=api_secret)
-        certificate_query = 'parsed.names: %s' % domain
+        certificate_query = 'parsed.names: %s' % value
         certificates_search_results = censys_certificates.search(certificate_query, fields=['parsed.names'])
          # Flatten the result, and remove duplicates
         subdomains = []
@@ -1169,8 +1169,8 @@ def MainFunc():
     parser.add_argument("-l", '--limit', action="store", metavar='LIMIT', dest='limit',type=int, default=100, help="Limit the number of search engine results (default: 100).")
     parser.add_argument("-i", '--info', action="store", metavar='MODE', dest='mode',type=str, default='basic', help="Limit information gathering (" + ','.join(modes) + ").")
     parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',type=str, default=None, help='Output in the four major formats at once (markdown, txt, xml and html).')
-    parser.add_argument('--censys-api-id',action='store', metavar='AUTHID', dest='censys_id',type=str, default=None, help='Provide an Authentication ID for the censys.io search engine')
-    parser.add_argument('--censys-api-secret',action='store', metavar='SECRID', dest='censys_secret',type=str, default=None, help='Provide an secret hash for the censys.io search engine')
+    parser.add_argument('--censys-api-id',action='store', dest='censys_api_id',type=str, default=None, help='Provide the authentication ID for the censys.io search engine')
+    parser.add_argument('--censys-api-secret',action='store', dest='censys_api_secret',type=str, default=None, help='Provide the secret hash for the censys.io search engine')
 
     if len(sys.argv) is 1:
         parser.print_help()
