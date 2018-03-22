@@ -1159,7 +1159,7 @@ def MainFunc():
     user_agent_strings_file = 'common-ua.txt'
     timeouts = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
-    modes = ['basic','whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo','ask', 'dogpile', 'yandex','censys.io', 'linkedin', 'twitter', 'googleplus', 'youtube', 'reddit','github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal', 'dnsdump']
+    modes = ['basic','whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo','ask', 'dogpile', 'yandex','censys', 'linkedin', 'twitter', 'googleplus', 'youtube', 'reddit','github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal', 'dnsdump']
     
     parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
     parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain',default=None, type=CheckDomain, help="Domain to search.", required=True)
