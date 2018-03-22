@@ -35,6 +35,7 @@ __version__ = "1.1"
 
 import argparse
 from argparse import RawTextHelpFormatter
+import censys.certificates
 import validators
 import sys
 import socket
@@ -1475,7 +1476,7 @@ def MainFunc():
         temp1 = CensysSearch(info['domain'], info['censys_api_id'], info['censys_api_secret'])
         info['domain'].extend(temp1)
         #info['all_hosts'].extend(temp2)
-        #Report("Censys", temp1, temp2, output_basename)
+        #Report("Censys", temp2, output_basename)
 
 #######################################################
 
