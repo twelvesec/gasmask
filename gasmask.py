@@ -636,7 +636,6 @@ def CensysSearch(value, api_id, api_secret):
         censys_certificates = censys.certificates.CensysCertificates(api_id=api_id, api_secret=api_secret)
         certificate_query = 'parsed.names: %s' % value
         certificates_search_results = censys_certificates.search(certificate_query, fields=['parsed.names'])
-         # Flatten the result, and remove duplicates
         subdomains = []
         for search_result in certificates_search_results:
             subdomains.extend(search_result['parsed.names'])
@@ -1473,7 +1472,7 @@ def MainFunc():
 
     if any(i in ['censys'] for i in info['mode']):
         print "[+] Searching in Censys.io.."
-        temp1 = CensysSearch(info['id'], info['authid'], info['secrid'])
+        temp1 = CensysSearch(info['domain'], info['censys_api_id'], info['censys_api_secret'])
         info['domain'].extend(temp1)
         #info['all_hosts'].extend(temp2)
         #Report("Censys", temp1, temp2, output_basename)
