@@ -1667,7 +1667,7 @@ def MainFunc():
                             print
                         else:
                             print "[!] the keys have been successfully updated!"
-                            answer1 = raw_input("[*] would you like to continue searching with censys.io ? ")
+                            answer1 = raw_input("[*] would you like to continue searching with censys.io ? [y/n] ")
                             print
                             if (answer1 == 'y'):
                                 with open('./censys_api_keys.txt') as f: 
