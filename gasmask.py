@@ -1614,8 +1614,6 @@ def MainFunc():
 ## Censys.io search ##
 
     if any(i in ['censys'] for i in info['mode']):
-        ena = args.censys_api_id
-        print ena
         if (args.censys_api_id != None and args.censys_api_secret != None):
             print "[+] Searching in Censys.io.."
             temp1 = CensysSearch(info['domain'], args.censys_api_id , args.censys_api_secret)
@@ -1654,7 +1652,7 @@ def MainFunc():
                         exit(1)
                         
                 if ( chkstored == True ):
-                    print "[!] It seems your API Keys are stored and will be used.."
+                    print "[!] It seems your API Keys are stored and are ready to be used.."
                     print
                     readFileContents()
                     print
