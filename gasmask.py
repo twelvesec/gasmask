@@ -1681,7 +1681,7 @@ def MainFunc():
                                 print "[*] Exiting..."
                                 exit(1)
                     else:
-                        answer1 = raw_input("[*] would you like to continue searching with censys.io ? ")
+                        answer1 = raw_input("[*] would you like to continue searching with censys.io ? [y/n] ")
                         print
                         if (answer1 == 'y'):
                             with open('./censys_api_keys.txt') as f: 
