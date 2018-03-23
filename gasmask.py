@@ -630,7 +630,7 @@ def SiteSearch(value, site, limit, uas, proxies, timeouts):
 
 #######################################################
 
-## Censys.io search ##
+## Censys.io subdomains search ##
 
 def CensysSearch(value, api_id, api_secret):
     try:
@@ -643,7 +643,7 @@ def CensysSearch(value, api_id, api_secret):
         
         return set(subdomains)
     except censys.base.CensysUnauthorizedException:
-        sys.stderr.write('[-] Your censys.io credentials are invalid.\n')
+        sys.stderr.write('[-] Your censys.io credentials are invalid. Please check your account API credentials.\n')
         exit(1)
     except censys.base.CensysRateLimitExceededException:
         sys.stderr.write('[-] You have exceeded your censys.io account limits. Exiting..\n')
