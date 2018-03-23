@@ -1630,7 +1630,7 @@ def MainFunc():
                             print
                             readFileContents()
                             print
-                            answer1 = raw_input("[*] would you like to continue searching with censys.io ? ")
+                            answer1 = raw_input("[*] would you like to continue searching with censys.io ? [y/n] ")
                             print
                             if (answer1 == 'n'):
                                 print "[*] Exiting..."
@@ -1656,7 +1656,7 @@ def MainFunc():
                     print
                     readFileContents()
                     print
-                    update = raw_input("[*] Would you like to update your keys ? ")
+                    update = raw_input("[*] Would you like to update your keys ? [y/n] ")
                     if (update == 'y'):
                         username = raw_input("[*] Please give the censys.io username: ")
                         keysupdate = updateAPIKeys(username)
