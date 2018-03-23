@@ -643,10 +643,10 @@ def CensysSearch(value, api_id, api_secret):
         
         return set(subdomains)
     except censys.base.CensysUnauthorizedException:
-        sys.stderr.write('[-] Your Censys credentials look invalid.\n')
+        sys.stderr.write('[-] Your censys.io credentials are invalid.\n')
         exit(1)
     except censys.base.CensysRateLimitExceededException:
-        sys.stderr.write('[-] Looks like you exceeded your Censys account limits rate. Exiting\n')
+        sys.stderr.write('[-] You have exceeded your censys.io account limits. Exiting..\n')
         exit(1)
 
 #######################################################
