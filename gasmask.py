@@ -687,55 +687,6 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
 
     return sorted(set(vhosts))
 
-
-#######################################################
-
-## Subdomains with Censys ##
-
-def CensysReport(engine, subdomains, output_basename):
-    if len(subdomains) is 0:
-        print('[-] Did not find any subdomain')
-        return
- 
-    print('[*] Found %d subdomains' % (len(subdomains)))
-    print('')
-    for subdomain in subdomains:
-        print(subdomain) 
-    print('')
-    
-    if output_basename:
-        output1 = output_basename + ".txt"
-        output2 = output_basename + ".md"
-        output3 = output_basename + ".xml"
-        output4 = output_basename + ".html"
-
-        with open(output1, 'a') as txt, open(output2, 'a') as md, open(output3, 'a') as xml, open(output4, 'a') as html:
-            txt.write("[+] {} results\n".format(engine))
-            txt.write("-------------------------\n")
-            md.write("---\n\n")
-            md.write("## {} results\n".format(engine))
-            xml.write("<{}Results>\n".format(engine))
-            html.write("<h3>{} results</h3>\n".format(engine))
-
-            txt.write("\n")
-            md.write("\n")
-
-            txt.write("Subdomains:\n")
-            md.write("### Subdomains\n\n")
-            xml.write("<Subdomains>\n")
-            html.write("<h4>Subdomains</h4>\n<ul>\n")
-
-            for email in emails:
-                txt.write("{}\n".format(email))
-                md.write("* {}\n".format(email))
-                xml.write("<Subdomain>{}</Subdomains>\n".format(email))
-                html.write("<li>{}</li>\n".format(email))
-
-            html.write("</ul>\n")
-            xml.write("</Subdomains>\n")
-            txt.write("\n")
-            md.write("\n")
-
 #######################################################
 
 ## Emails & Hostnames Console report ##
@@ -802,6 +753,56 @@ def Report(engine, emails, hostnames, output_basename):
             txt.write("\n")
             md.write("\n")
             xml.write("</{}Results>\n".format(engine))
+            
+#######################################################
+
+## Subdomains Console report ##
+
+def SubdomainsReport(engine, subdomains, output_basename):
+
+    if len(subdomains) is 0:
+        print('[-] Did not find any subdomain')
+        return
+ 
+    print('')
+    print('[*] Found %d subdomains' % (len(subdomains)))
+    print('')
+    for subdomain in subdomains:
+        print(subdomain) 
+    print('')
+    
+    if output_basename:
+        output1 = output_basename + ".txt"
+        output2 = output_basename + ".md"
+        output3 = output_basename + ".xml"
+        output4 = output_basename + ".html"
+
+        with open(output1, 'a') as txt, open(output2, 'a') as md, open(output3, 'a') as xml, open(output4, 'a') as html:
+            txt.write("[+] {} results\n".format(engine))
+            txt.write("-------------------------\n")
+            md.write("---\n\n")
+            md.write("## {} results\n".format(engine))
+            xml.write("<{}Results>\n".format(engine))
+            html.write("<h3>{} results</h3>\n".format(engine))
+
+            txt.write("\n")
+            md.write("\n")
+
+            txt.write("Subdomains:\n")
+            md.write("### Subdomains\n\n")
+            xml.write("<Subdomains>\n")
+            html.write("<h4>Subdomains</h4>\n<ul>\n")
+
+            for email in emails:
+                txt.write("{}\n".format(email))
+                md.write("* {}\n".format(email))
+                xml.write("<Subdomain>{}</Subdomains>\n".format(email))
+                html.write("<li>{}</li>\n".format(email))
+
+            html.write("</ul>\n")
+            xml.write("</Subdomains>\n")
+            txt.write("\n")
+            md.write("\n")
 
 #######################################################
 
@@ -1128,20 +1129,32 @@ def VHostsReport(data, output_basename):
 
 def FinalReport(info, output_basename):
 
+    
     print
     print "[+] Search engines results - Final Report"
     print "-----------------------------------------"
 
-    print
-    print "Emails:"
-    for email in info['all_emails']:
-        print email
+    if (info['all_emails'] != []):
+        print
+        print "Emails:"
+        print
+        for email in info['all_emails']:
+            print email
 
-    print
-    print "Hostnames:"
-    for host in info['all_hosts']:
-        print host
-    print
+    if (info['all_hosts'] != []):
+        print
+        print "Hostnames:"
+        print
+        for host in info['all_hosts']:
+            print host
+        
+    if (info['domains'] != []):
+        print
+        print "Subdomains:"
+        print
+        for domains in info['domains']:
+            print domains
+        print
 
     if output_basename:
         output1 = output_basename + ".txt"
@@ -1191,6 +1204,22 @@ def FinalReport(info, output_basename):
             xml.write("</Hostnames>\n")
             txt.write("\n")
             md.write("\n")
+            
+            txt.write("Subdomains:\n")
+            md.write("### Subdomains\n\n")
+            xml.write("<Subdomains>\n")
+            html.write("<h4>Subdomains</h4>\n<ul>\n")
+
+            for host in info['domain']:
+                txt.write("{}\n".format(host))
+                md.write("* {}\n".format(host))
+                xml.write("<Subdomain>{}</Subdomain>\n".format(host))
+                html.write("<li>{}</li>\n".format(host))
+
+            html.write("</ul>\n")
+            xml.write("</Subdomain>\n")
+            txt.write("\n")
+            md.write("\n")            
             xml.write("</FinalReport>\n")
 
 #######################################################
@@ -1204,6 +1233,7 @@ def MainFunc():
     info = {}
     info['all_emails'] = []
     info['all_hosts'] = []
+    info['domains'] = []
     uas = []
 
     user_agent_strings_file = 'common-ua.txt'
@@ -1228,8 +1258,7 @@ def MainFunc():
     args = parser.parse_args()
     info['domain'] = args.domain
     info['proxies'] = {}
-    info['censys_api_id'] = {} 
-    info['censys_api_secret'] = {}
+
     
 
 #######################################################
@@ -1505,8 +1534,9 @@ def MainFunc():
 
     if any(i in ['censys'] for i in info['mode']):
         print "[+] Searching in Censys.io.."
-        subdomains = CensysSearch(info['domain'], args.censys_api_id , args.censys_api_secret)
-        CensysReport('Censys', subdomains, output_basename)
+        temp1 = CensysSearch(info['domain'], args.censys_api_id , args.censys_api_secret)
+        info['domains'].extend(temp1)
+        SubdomainsReport('Censys', temp1, output_basename)
 
 #######################################################
 
@@ -1514,7 +1544,7 @@ def MainFunc():
     
     info['all_emails'] = sorted(set(info['all_emails']))
     info['all_hosts'] = sorted(set(info['all_hosts']))
-    #info['domain'] = sorted(set(info['domain']))
+    info['domains'] = sorted(set(info['domains']))
     FinalReport(info, output_basename)
 
 #######################################################
