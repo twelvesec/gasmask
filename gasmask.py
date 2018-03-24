@@ -1609,13 +1609,6 @@ def MainFunc():
         info['all_hosts'].extend(temp2)
         Report("Instagram", temp1, temp2, output_basename)
 		
-
-#######################################################
-
-## Censys.io search ##
-
-
-       
 #######################################################
 
 ## Censys.io user interaction ##
