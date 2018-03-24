@@ -874,11 +874,11 @@ def SubdomainsReport(engine, subdomains, output_basename):
             xml.write("<Subdomains>\n")
             html.write("<h4>Subdomains</h4>\n<ul>\n")
 
-            for email in emails:
-                txt.write("{}\n".format(email))
-                md.write("* {}\n".format(email))
-                xml.write("<Subdomain>{}</Subdomains>\n".format(email))
-                html.write("<li>{}</li>\n".format(email))
+            for domains in subdomains:
+                txt.write("{}\n".format(domains))
+                md.write("* {}\n".format(domains))
+                xml.write("<Subdomain>{}</Subdomains>\n".format(domains))
+                html.write("<li>{}</li>\n".format(domains))
 
             html.write("</ul>\n")
             xml.write("</Subdomains>\n")
@@ -1291,11 +1291,11 @@ def FinalReport(info, output_basename):
             xml.write("<Subdomains>\n")
             html.write("<h4>Subdomains</h4>\n<ul>\n")
 
-            for host in info['domain']:
-                txt.write("{}\n".format(host))
-                md.write("* {}\n".format(host))
-                xml.write("<Subdomain>{}</Subdomain>\n".format(host))
-                html.write("<li>{}</li>\n".format(host))
+            for domain in info['domains']:
+                txt.write("{}\n".format(domain))
+                md.write("* {}\n".format(domain))
+                xml.write("<Subdomain>{}</Subdomain>\n".format(domain))
+                html.write("<li>{}</li>\n".format(domain))
 
             html.write("</ul>\n")
             xml.write("</Subdomain>\n")
@@ -1608,10 +1608,17 @@ def MainFunc():
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Instagram", temp1, temp2, output_basename)
-        
+		
+
 #######################################################
 
 ## Censys.io search ##
+
+
+       
+#######################################################
+
+## Censys.io user interaction ##
 
     if any(i in ['censys'] for i in info['mode']):
         if (args.censys_api_id != None and args.censys_api_secret != None):
