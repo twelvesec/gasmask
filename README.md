@@ -2,7 +2,10 @@
 
 All in one Information gathering tool - OSINT
 
-Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.com/maldevel))
+Written by: 
+
+* [maldevel](https://github.com/maldevel) ([twitter](https://twitter.com/maldevel))
+* [mikismaos](https://github.com/mikismaos)
 
 ---
 
@@ -13,6 +16,7 @@ Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.c
 * python-whois
 * dnspython
 * requests
+* shodan
 
 ### Information Gathering
 
@@ -31,6 +35,7 @@ Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.c
 * pgp
 * reddit
 * reverse dns
+* shodan
 * twitter
 * vhosts
 * virustotal
@@ -76,10 +81,11 @@ optional arguments:
                         Use a proxy server when retrieving results from search engines (eg. '-x http://127.0.0.1:8080')
   -l LIMIT, --limit LIMIT
                         Limit the number of search engine results (default: 100)                                                          .
-  -i MODE, --info MODE  Limit information gathering (basic,whois,dns,revdns,vhosts,google,bing,yahoo,ask,dogpile,yandex,linkedin,twitter,googleplus,youtube,reddit,github,instagram,crt,pgp,netcraft,virustotal,dnsdump).
+  -i MODE, --info MODE  Limit information gathering (basic,whois,dns,revdns,vhosts,google,bing,yahoo,ask,dogpile,yandex,linkedin,twitter,googleplus,youtube,reddit,github,instagram,crt,pgp,netcraft,virustotal,dnsdump,shodan).
   -o BASENAME, --output BASENAME
                         Output in the four major formats at once (markdown, txt, xml and html).
-
+  -k API-KEY, --shodan-key API-KEY
+                        API key to use with Shodan search (MODE="shodan")
 ```
 
 ---
@@ -90,6 +96,8 @@ optional arguments:
 python gasmask.py -d example.com -i basic
 
 python gasmask.py -d example.com -i dnsdump
+
+python gasmask.py -d example.com -i shodan -k xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 python gasmask.py -d example.com -i whois,dns,revdns
 
