@@ -2,7 +2,7 @@
 
 All in one Information gathering tool - OSINT
 
-**For a full list of our tools, please visit our website https://www.twelvesec.com/**
+*For a full list of our tools, please visit our website https://www.twelvesec.com/*
 
 Written by:
 
