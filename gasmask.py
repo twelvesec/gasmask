@@ -1658,13 +1658,7 @@ def MainFunc():
                     if (chkanswer == 'n'):
                         print "[!] Please provide the API keys in the command line to continue searching"
                         print "[*] Exiting...."
-                        exit(0)
-                
-                if ((args.read_api_keys == True or args.read_api_keys == True ) and (args.mode == 'censys') and flag != 1):
-                    print
-                    readFileContents()
-                    print
-                    exit(0)
+                        exit(0)                
                         
                 if ( chkstored == True ):
                     if ((args.update_api_keys == True or args.update_api_keys == True) and (args.mode == 'censys') and flag != 1):
@@ -1690,13 +1684,33 @@ def MainFunc():
                                 print "[*] Exiting..."
                                 exit(1)
                     else: 
-                        with open('./api_keys.txt') as f: 
-                                            lines = f.read().splitlines()    
-                                            for line in lines:
-                                                print "[+] Searching in Censys.io.."
-                                                temp1 = CensysSearch(info['domain'], line.split(":")[1] , line.split(":")[2])
-                                                info['domains'].extend(temp1)
-                                                SubdomainsReport('Censys', temp1, output_basename)
+                        if ((args.read_api_keys != True or args.read_api_keys != True )):
+                            with open('./api_keys.txt') as f: 
+                                                lines = f.read().splitlines()    
+                                                for line in lines:
+                                                    print "[+] Searching in Censys.io.."
+                                                    temp1 = CensysSearch(info['domain'], line.split(":")[1] , line.split(":")[2])
+                                                    info['domains'].extend(temp1)
+                                                    SubdomainsReport('Censys', temp1, output_basename)
+                                                
+                if ((args.read_api_keys == True or args.read_api_keys == True ) and (args.mode == 'censys') and flag != 1):
+                    print
+                    readFileContents()
+                    print
+                    answer1 = raw_input("[*] would you like to continue searching with censys.io ? [y/n] ")
+                    print
+                    if (answer1 == 'y'):
+                         with open('./api_keys.txt') as f: 
+                                    lines = f.read().splitlines()    
+                                    for line in lines:                                
+                                        print "[+] Searching in Censys.io.."
+                                        temp1 = CensysSearch(info['domain'], line.split(":")[1] , line.split(":")[2])
+                                        info['domains'].extend(temp1)
+                                        SubdomainsReport('Censys', temp1, output_basename)
+                    else:
+                        print "[*] Exiting..."
+                        exit(1)
+                                        
 
 #######################################################
 
