@@ -122,8 +122,8 @@ def readFileContents():
 
 def createFileAndStoreAPIKeys(engine):
     f = open("api_keys.txt", "w+")
-    api_id = raw_input("[*] please give the new %s API ID: "  % engine )
-    api_sec = raw_input("[*] please give the new %s API Secret: " % engine)
+    api_id = raw_input("[*] please provide the new %s API ID: "  % engine )
+    api_sec = raw_input("[*] please provide the new %s API Secret: " % engine)
     f.write(engine + ":" + api_id + ":" + api_sec)
     f.close()
     return("stored")
@@ -134,8 +134,8 @@ def createFileAndStoreAPIKeys(engine):
 
 def updateAPIKeys(engine):
     ckhstored = checkUser(engine)
-    api_id = raw_input("[*] please give the new %s API ID: "  % engine )
-    api_sec = raw_input("[*] please give the new %s API Secret: " % engine)
+    api_id = raw_input("[*] please provide the new %s API ID: "  % engine )
+    api_sec = raw_input("[*] please provide the new %s API Secret: " % engine)
     with open("api_keys.txt","r+") as op:
         lines = op.read().splitlines()
         if (ckhstored == True):
