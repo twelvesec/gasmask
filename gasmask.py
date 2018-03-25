@@ -36,6 +36,8 @@ __version__ = "1.1"
 import argparse
 from argparse import RawTextHelpFormatter
 import censys.certificates
+from censys.ipv4 import *
+from censys.base import *
 import validators
 import sys
 import socket
@@ -73,77 +75,79 @@ https://www.twelvesec.com/
 
 #######################################################
 
-## Check if File exists for Censys.io ##
+## Check if File exists ##
 
 def checkFile():
-    is_true = os.path.isfile("./censys_api_keys.txt")
+    is_true = os.path.isfile("./api_keys.txt")
     if ( is_true != True ):
+        return False
+    if os.path.getsize("./api_keys.txt") == 0 : 
         return False
     else:
         return True
 
 #######################################################
 
-## Check if user exists for Censys.io ##
+## Check if engine exists in API key file ##
 
-def checkUser(username):   
+def checkUser(engine):   
     chk = checkFile()
     if (chk == False):
         return False
     else: 
-        f = open('./censys_api_keys.txt')
-        sss = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-        if ( sss.find(username) != -1 ):
-            return True
-        else:
-            return False
+        with open('./api_keys.txt') as f:
+            s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+            if ( s.find(engine) != -1 ):
+                return True
+            else:
+                return False
 
 #######################################################
 
-## Read File Contents for Censys.io ##
+## Read API Keys from file  ##
    
 def readFileContents():
-    with open('./censys_api_keys.txt') as f: 
+    with open('./api_keys.txt') as f: 
         lines = f.read().splitlines()
-        print ("| Username |            Censys API Keys ID           |          Censys API Secret Keys         |")
-        print ("|==============================================================================================|")
+        print ("|       Engine       |                API Keys ID              |              API Secret Keys            |")
+        print ("|========================================================================================================|")
         for line in lines:
-            print "|",line.split(":")[0]," "*(7-len(line.split(":")[0])),"|"  \
+            print "|",line.split(":")[0]," "*(17-len(line.split(":")[0])),"|"  \
                      ,line.split(":")[1]," "*(38-len(line.split(":")[1])),"|" \
                      ,line.split(":")[2]," "*(38-len(line.split(":")[2])),"|"
         
 #######################################################
 
-## Create File and Store the API Keys for Censys.io ##
+## Create File and Store the API Keys ##
 
-def createFileAndStoreAPIKeys(username):
-    f = open("censys_api_keys.txt", "w+")
-    api_id = raw_input("[*] please give the new Censys API ID: ")
-    api_sec = raw_input("[*] please give the new Censys API Secret: ")
-    f.write(username + ":" + api_id + ":" + api_sec)
+def createFileAndStoreAPIKeys(engine):
+    f = open("api_keys.txt", "w+")
+    api_id = raw_input("[*] please give the new %s API ID: "  % engine )
+    api_sec = raw_input("[*] please give the new %s API Secret: " % engine)
+    f.write(engine + ":" + api_id + ":" + api_sec)
     f.close()
     return("stored")
 
 #######################################################
 
-## Update API Keys for Censys.io ##
+## Update API Keys ##
 
-def updateAPIKeys(username):
-    ckhstored = checkUser(username)
-    api_id = raw_input("[*] please give the new Censys API ID: ")
-    api_secret = raw_input("[*] please give the new Censys API Secret: ")
-    with open("censys_api_keys.txt","r+") as op:
+def updateAPIKeys(engine):
+    ckhstored = checkUser(engine)
+    api_id = raw_input("[*] please give the new %s API ID: "  % engine )
+    api_sec = raw_input("[*] please give the new %s API Secret: " % engine)
+    with open("api_keys.txt","r+") as op:
         lines = op.read().splitlines()
         if (ckhstored == True):
             for line in lines: 
                 if (line != line.split(":")[0]):
-                    with open("censys_api_keys.txt", "w+") as f:
+                    with open("api_keys.txt", "w+") as f:
                         f.write(line)
                     
             for line in lines: 
                 if (line != line.split(":")[0]):
-                    with open("censys_api_keys.txt", "w+") as f1:
-                        f1.write(username + ":" + api_id + ":" + api_secret)
+                    with open("api_keys.txt", "w+") as f1:
+                        f1.write(engine + ":" + api_id + ":" + api_sec)
             return 'y'
         
         if (ckhstored == False):
@@ -1329,8 +1333,11 @@ def MainFunc():
     parser.add_argument("-l", '--limit', action="store", metavar='LIMIT', dest='limit',type=int, default=100, help="Limit the number of search engine results (default: 100).")
     parser.add_argument("-i", '--info', action="store", metavar='MODE', dest='mode',type=str, default='basic', help="Limit information gathering (" + ','.join(modes) + ").")
     parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',type=str, default=None, help='Output in the four major formats at once (markdown, txt, xml and html).')
-    parser.add_argument('-c', '--censys_api_id', action='store', metavar='CENSYS_API_ID', dest='censys_api_id',type=str, default=None, help='Provide the authentication ID for the censys.io search engine')
-    parser.add_argument('-y', '--censys_api_secret', action='store', metavar='CENSYS_API_SECRET', dest='censys_api_secret',type=str, default=None, help='Provide the secret hash for the censys.io search engine')
+    parser.add_argument('-1', '--censys_api_id', action='store', metavar='CENSYS_API_ID', dest='censys_api_id',type=str, default=None, help='Provide the authentication ID for the censys.io search engine')
+    parser.add_argument('-2', '--censys_api_secret', action='store', metavar='CENSYS_API_SECRET', dest='censys_api_secret',type=str, default=None, help='Provide the secret hash for the censys.io search engine')
+    parser.add_argument('-r', '--read_api_keys', action='store_true', help='Read the API Keys stored in api_keys.txt file')
+    parser.add_argument('-u', '--update_api_keys', action='store_true',  help='Update the API Keys stored in api_keys.txt file')
+    
 
     if len(sys.argv) is 1:
         parser.print_help()
@@ -1611,7 +1618,7 @@ def MainFunc():
 		
 #######################################################
 
-## Censys.io user interaction ##
+## Censys.io searching ##
 
     if any(i in ['censys'] for i in info['mode']):
         if (args.censys_api_id != None and args.censys_api_secret != None):
@@ -1621,11 +1628,11 @@ def MainFunc():
             SubdomainsReport('Censys', temp1, output_basename)
         else:         
                 chkstored = checkFile()
+                flag=0
                 if ( chkstored == False ):
                     chkanswer = raw_input("[!] API Keys not provided. Would you like to store your API keys ? [y/n]: ")
                     if (chkanswer == 'y'):
-                        username = raw_input("[*] Please enter your Censys.io username:")
-                        stored = createFileAndStoreAPIKeys(username)
+                        stored = createFileAndStoreAPIKeys('censys')
                         if (stored == "stored"):
                             print
                             readFileContents()
@@ -1633,15 +1640,17 @@ def MainFunc():
                             answer1 = raw_input("[*] would you like to continue searching with censys.io ? [y/n] ")
                             print
                             if (answer1 == 'n'):
+                                flag=1
                                 print "[*] Exiting..."
                             if (answer1 == 'y'):
-                                with open('./censys_api_keys.txt') as f: 
+                                with open('./api_keys.txt') as f: 
                                     lines = f.read().splitlines()    
                                     for line in lines:                                
                                         print "[+] Searching in Censys.io.."
                                         temp1 = CensysSearch(info['domain'], line.split(":")[1] , line.split(":")[2])
                                         info['domains'].extend(temp1)
                                         SubdomainsReport('Censys', temp1, output_basename)
+                                        flag=1
                         else:
                             print "[x] API keys has not been stored.."
                             print "[*] Exiting..."
@@ -1649,17 +1658,17 @@ def MainFunc():
                     if (chkanswer == 'n'):
                         print "[!] Please provide the API keys in the command line to continue searching"
                         print "[*] Exiting...."
-                        exit(1)
-                        
-                if ( chkstored == True ):
-                    print "[!] It seems your API Keys are stored and are ready to be used.."
+                        exit(0)
+                
+                if ((args.read_api_keys == True or args.read_api_keys == True ) and (args.mode == 'censys') and flag != 1):
                     print
                     readFileContents()
                     print
-                    update = raw_input("[*] Would you like to update your keys ? [y/n] ")
-                    if (update == 'y'):
-                        username = raw_input("[*] Please give the censys.io username: ")
-                        keysupdate = updateAPIKeys(username)
+                    exit(0)
+                        
+                if ( chkstored == True ):
+                    if ((args.update_api_keys == True or args.update_api_keys == True) and (args.mode == 'censys') and flag != 1):
+                        keysupdate = updateAPIKeys('censys')
                         if (keysupdate == 'n'):
                             print "[x] the keys have not been updated"
                             print "[*] Exiting..."
@@ -1670,7 +1679,7 @@ def MainFunc():
                             answer1 = raw_input("[*] would you like to continue searching with censys.io ? [y/n] ")
                             print
                             if (answer1 == 'y'):
-                                with open('./censys_api_keys.txt') as f: 
+                                with open('./api_keys.txt') as f: 
                                     lines = f.read().splitlines()    
                                     for line in lines:                                
                                         print "[+] Searching in Censys.io.."
@@ -1680,20 +1689,14 @@ def MainFunc():
                             else:
                                 print "[*] Exiting..."
                                 exit(1)
-                    else:
-                        answer1 = raw_input("[*] would you like to continue searching with censys.io ? [y/n] ")
-                        print
-                        if (answer1 == 'y'):
-                            with open('./censys_api_keys.txt') as f: 
+                    else: 
+                        with open('./api_keys.txt') as f: 
                                             lines = f.read().splitlines()    
                                             for line in lines:
                                                 print "[+] Searching in Censys.io.."
                                                 temp1 = CensysSearch(info['domain'], line.split(":")[1] , line.split(":")[2])
                                                 info['domains'].extend(temp1)
                                                 SubdomainsReport('Censys', temp1, output_basename)
-                        if (answer1 == 'n'):
-                            print "[*] Exiting..."
-                            exit(1)
 
 #######################################################
 
