@@ -1642,6 +1642,7 @@ def MainFunc():
                             if (answer1 == 'n'):
                                 flag=1
                                 print "[*] Exiting..."
+                                exit(0)
                             if (answer1 == 'y'):
                                 with open('./api_keys.txt') as f: 
                                     lines = f.read().splitlines()    
@@ -1654,7 +1655,7 @@ def MainFunc():
                         else:
                             print "[x] API keys has not been stored.."
                             print "[*] Exiting..."
-                            exit(1)
+                            exit(0)
                     if (chkanswer == 'n'):
                         print "[!] Please provide the API keys in the command line to continue searching"
                         print "[*] Exiting...."
@@ -1666,7 +1667,7 @@ def MainFunc():
                         if (keysupdate == 'n'):
                             print "[x] the keys have not been updated"
                             print "[*] Exiting..."
-                            exit(1)
+                            exit(0)
                             print
                         else:
                             print "[!] the keys have been successfully updated!"
@@ -1682,7 +1683,7 @@ def MainFunc():
                                         SubdomainsReport('Censys', temp1, output_basename)
                             else:
                                 print "[*] Exiting..."
-                                exit(1)
+                                exit(0)
                     else: 
                         if ((args.read_api_keys != True or args.read_api_keys != True )):
                             with open('./api_keys.txt') as f: 
@@ -1709,7 +1710,7 @@ def MainFunc():
                                         SubdomainsReport('Censys', temp1, output_basename)
                     else:
                         print "[*] Exiting..."
-                        exit(1)
+                        exit(0)
                                         
 
 #######################################################
