@@ -1314,6 +1314,30 @@ def FinalReport(info, output_basename):
 def MainFunc():
 
     print message
+    
+    # API is time limited
+    # 0.2 tokens/second (60.0 per 5 minute)
+    report_buckets=50
+    filter_fields = ['location.country', 'location.country_code', 'location.city', 'ip', \
+                     'protocols', 'autonomous_system.name', \
+                     'autonomous_system.asn', \
+                     '443.https.tls.certificate.parsed.subject.organization', \
+                     '443.https.tls.certificate.parsed.subject.common_name', \
+                     '443.https.tls.certificate.parsed.extensions.subject_alt_name.dns_names', \
+                     '993.imaps.tls.tls.certificate.parsed.subject.common_name', \
+                     '993.imaps.tls.tls.certificate.parsed.subject.organization',\
+                     '80.http.get.title',\
+                     '80.http.get.headers.server',\
+                     '80.http.get.body',\
+                     'metadata.os', 'tags']
+    report_fields = ['location.country_code', 'location.country.raw', 'ip', \
+                     'autonomous_system.asn', 'autonomous_system.organization.raw', \
+                     'autonomous_system.description.raw', \
+                     '443.https.tls.certificate.parsed.subject.common_name.raw', \
+                     '993.imaps.tls.tls.certificate.parsed.subject.common_name.raw', \
+                     '80.http.get.headers.server.raw', \
+                     "80.http.get.title.raw", \
+                     'metadata.os.raw', 'protocols', 'tags.raw']
 
     info = {}
     info['all_emails'] = []
@@ -1333,10 +1357,22 @@ def MainFunc():
     parser.add_argument("-l", '--limit', action="store", metavar='LIMIT', dest='limit',type=int, default=100, help="Limit the number of search engine results (default: 100).")
     parser.add_argument("-i", '--info', action="store", metavar='MODE', dest='mode',type=str, default='basic', help="Limit information gathering (" + ','.join(modes) + ").")
     parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',type=str, default=None, help='Output in the four major formats at once (markdown, txt, xml and html).')
+    
+    
+    # query filter shortcuts - censys.io
     parser.add_argument('-1', '--censys_api_id', action='store', metavar='CENSYS_API_ID', dest='censys_api_id',type=str, default=None, help='Provide the authentication ID for the censys.io search engine')
     parser.add_argument('-2', '--censys_api_secret', action='store', metavar='CENSYS_API_SECRET', dest='censys_api_secret',type=str, default=None, help='Provide the secret hash for the censys.io search engine')
-    parser.add_argument('-r', '--read_api_keys', action='store_true', help='Read the API Keys stored in api_keys.txt file')
-    parser.add_argument('-u', '--update_api_keys', action='store_true',  help='Update the API Keys stored in api_keys.txt file')
+    parser.add_argument('-r', '--read_api_keys', action='store_true', help="Read the API Keys stored in api_keys.txt file. (e.g. '-i censys -r')")
+    parser.add_argument('-u', '--update_api_keys', action='store_true',  help="Update the API Keys stored in api_keys.txt file. (e.g. '-i censys -u')")
+    parser.add_argument('-a', '--asn', default=None, help='Filter with ASN (ex: 25408 for Westcall-SPB AS)')
+    parser.add_argument('-c', '--country', default=None, help='Filter with country')
+    parser.add_argument('-O', '--cert-org', default=None, help='Cert issued to org')
+    parser.add_argument('-I', '--cert-issuer', default=None, help='Cert issued by org')
+   # parser.add_argument('-h', '--cert-host', default=None, help='hostname cert is issued to')
+    parser.add_argument('-S', '--http-server', default=None, help='Server header')
+    parser.add_argument('-t', '--html-title', default=None, help='Filter on html page title')
+    parser.add_argument('-b', '--html-body', default=None, help='Filter on html body content')
+    parser.add_argument('-T', '--tags', default=None, help='Filter on specific tags. E.g: -T tag1,tag2,... (use keyword \'list\' to list usual tags')
     
 
     if len(sys.argv) is 1:
