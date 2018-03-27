@@ -98,7 +98,7 @@ python gasmask.py -d example.com -i basic,yahoo,github -o myresults/example_com_
 
 ```
 
-### censys.io
+### censys.io usage example 
 
 ```
 
@@ -117,14 +117,14 @@ python gasmask.py -i censys -t "Logon Error Message" -S ABAP -m "ICF-nf-http" --
 
 ```
 
-Read the API Keys 
+Read the API Keys e.g in censys.io 
 
 ```
 python gasmask.py -i censys -r 
 
 ```
 
-Update the API Keys 
+Update the API Keys e.g in censys.io
 
 ```
 python gasmask.py -i censys -u 
