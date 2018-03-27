@@ -96,6 +96,12 @@ python gasmask.py -d example.com -i whois,dns,revdns
 
 python gasmask.py -d example.com -i basic,yahoo,github -o myresults/example_com_search_results
 
+```
+
+### censys.io
+
+```
+
 python gasmask.py -i censys --limit 20 nmap
 
 python gasmask.py -i censys -I ABAP --report location.country.raw --report_bucket 10
@@ -104,6 +110,9 @@ python gasmask.py -i censys --html-title "Hacked by" --Limit 20 --html
 
 python gasmask.py -i censys --tags heartbleed --report location.country.raw
 
+python gasmask.py -i censys -S SAP --count
+
+python gasmask.py -i censys -t "Logon Error Message" -S ABAP -m "ICF-nf-http" --limit 10
 
 
 ```
