@@ -170,7 +170,7 @@ def CensysPublicScan(api_id , api_sec, output_basename, args, report_buckets, fi
              open(htmldir+"/README", "w").write("html body dumped via command:"+' '.join(sys.argv))
              print "HTML body dumped to %s" % htmldir
                     
-        # else hit the 'search' API
+        # search the API 
         if args.filter: filter_fields = args.filter.split(',')
         r = q.search(s, fields=filter_fields)
         i = 0
@@ -412,7 +412,7 @@ def readFileContents():
         
 #######################################################
 
-## Create File and Store the API Keys ##
+## Create file and Store the API Keys ##
 
 def createFileAndStoreAPIKeys(engine):
     f = open("api_keys.txt", "w+")
