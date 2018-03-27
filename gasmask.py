@@ -187,6 +187,8 @@ def CensysPublicScan(api_id , api_sec, output_basename, args, report_buckets, fi
                 if args.html: dump_html_to_file(htmldir, e)
                 if match != 'None': print_match(q.view(e['ip']), match)
                 i += 1
+    else: 
+        print "[!] Please provide one of the Censys.io options in order to continue searching. For more information about the available options use the following option '--help'"
 
 #######################################################
 
@@ -400,6 +402,8 @@ def DomainSearchCensys(domain_name, api_ip, api_sec, output_basename, domains):
         temp1 = CensysSearch(domain_name, api_ip , api_sec)
         domains.extend(temp1)
         SubdomainsReport('Censys', temp1, output_basename)
+    else:
+        print "[!] Domain is missing. Please provide a domain to search.."
 
 #######################################################
 
@@ -2005,7 +2009,7 @@ def MainFunc():
                             print
                             answer1 = raw_input("[*] would you like to continue searching with censys.io ? [y/n] ")
                             print
-                            if (answer1 == 'n'):
+                            if (answer1 == 'n' ):
                                 flag=1
                                 print "[*] Exiting..."
                                 exit(0)
