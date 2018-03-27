@@ -1990,6 +1990,7 @@ def MainFunc():
     if any(i in ['censys'] for i in info['mode']):        
         if (args.censys_api_id != None and args.censys_api_secret != None):
             print "[+] Searching in Censys.io.."
+            print
             DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename)
             CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields)
             print
@@ -2013,7 +2014,8 @@ def MainFunc():
                             if (answer1 == 'y'):
                                 with open('./api_keys.txt') as f: 
                                     lines = f.read().splitlines()
-                                    print "[+] Searching in Censys.io.."    
+                                    print "[+] Searching in Censys.io.."
+                                    print    
                                     for line in lines:                              
                                         DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
                                         CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields)
@@ -2044,6 +2046,7 @@ def MainFunc():
                                 with open('./api_keys.txt') as f: 
                                     lines = f.read().splitlines()   
                                     print "[+] Searching in Censys.io.." 
+                                    print
                                     for line in lines:                                
                                        DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
                                        CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields)
@@ -2056,6 +2059,7 @@ def MainFunc():
                             with open('./api_keys.txt') as f: 
                                     lines = f.read().splitlines()    
                                     print "[+] Searching in Censys.io.."
+                                    print
                                     for line in lines:                                        
                                         DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
                                         CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields)
@@ -2071,6 +2075,7 @@ def MainFunc():
                              with open('./api_keys.txt') as f: 
                                         lines = f.read().splitlines()  
                                         print "[+] Searching in Censys.io.."  
+                                        print
                                         for line in lines:                         
                                             DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
                                             CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields)

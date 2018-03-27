@@ -110,7 +110,7 @@ python gasmask.py -i censys --html-title "Hacked by" --Limit 20 --html
 
 python gasmask.py -i censys --tags heartbleed --report location.country.raw
 
-python gasmask.py -i censys -S SAP --count
+python gasmask.py -i censys -S NGINX --count
 
 python gasmask.py -i censys -t "Logon Error Message" -S ABAP -m "ICF-nf-http" --limit 10
 
