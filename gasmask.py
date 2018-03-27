@@ -1987,7 +1987,7 @@ def MainFunc():
 		
 #######################################################
 
-## Censys.io searching ##
+## Censys.io search ##
 
     if any(i in ['censys'] for i in info['mode']):        
         if (args.censys_api_id != None and args.censys_api_secret != None):
