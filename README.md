@@ -117,6 +117,20 @@ python gasmask.py -i censys -t "Logon Error Message" -S ABAP -m "ICF-nf-http" --
 
 ```
 
+Read the API Keys 
+
+```
+python gasmask.py -i censys -r 
+
+```
+
+Update the API Keys 
+
+```
+python gasmask.py -i censys -u 
+
+```
+
 ---
 
 ### Credits
