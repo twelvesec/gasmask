@@ -506,21 +506,21 @@ def WhoisQuery(value):
     whoisData["creation_date"] = ["-", "Creation Date:"]
     whoisData["name_servers"] = ["-", "Name Servers:"]
 
-    domain = whois.whois(value)
+    dom = whois.whois(value)
 
     for rec in whoisData:
-        if domain[rec]:
-            if isinstance(domain[rec], list):
+        if dom[rec]:
+            if isinstance(dom[rec], list):
                 if rec is 'name_servers':
                     whoisData[rec][0] = []
-                    for val in domain[rec]:
+                    for val in dom[rec]:
                         whoisData[rec][0].append(val + ":" + VerifyHostname(val))
                 else:
                     whoisData[rec][0] = []
-                    for val in domain[rec]:
+                    for val in dom[rec]:
                         whoisData[rec][0].append(val)
             else:
-                whoisData[rec][0] = str(domain[rec])
+                whoisData[rec][0] = str(dom[rec])
 
     return whoisData
 
@@ -545,9 +545,7 @@ def _query(value, dnsserver, record):
                 return answer.to_text()
     except Exception as e:
         return '-'
-
     return dnsData
-
 
 def DnsQuery(value, dnsserver, record=None):
 
@@ -2112,9 +2110,14 @@ if __name__ == '__main__':
 
     try:
         MainFunc()
+    except Exception as ex:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        message = template.format(type(ex).__name__, ex.args)
+        print message
+    '''
     except KeyboardInterrupt:
         print "Search interrupted by user.."
     except:
         sys.exit()
-
+    '''
 #######################################################
