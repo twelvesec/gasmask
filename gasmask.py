@@ -191,7 +191,7 @@ def CensysPublicScan(api_id , api_sec, output_basename, args, report_buckets, fi
 
 #######################################################
 
-## Printing the matching results - Censys.io ##
+## finding matching results - Censys.io ##
 
 def print_match(res, m):
     for k in res.keys():
@@ -200,7 +200,7 @@ def print_match(res, m):
 
 #######################################################
 
-## Print the results - Censys.io ##
+## Format the result output - Censys.io ##
 
 def print_report(res, key):
     r = res['results']
@@ -277,13 +277,13 @@ def BuildQuery(api_id, api_sec,pargs):
 
 #######################################################
 
-## Printing Reults - Censys.io ##
+## Printing Results - Censys.io ##
 
 def print_res(path, match, val):
     sep = ' '
     pre = '[...]'
     post = pre
-    pos = match.lower().index(val.lower()) # dirty
+    pos = match.lower().index(val.lower())
     if len(match) >= 80:
         if pos <35:
             pre = ''
@@ -346,14 +346,6 @@ def json_find(obj, k, visited, val):
 
 #######################################################
 
-## Print HTML - Censys.io ##
-
-def print_html(e):
-    # html content can be found in several places
-    return
-
-#######################################################
-
 ## Dump HTML to file - Censys.io ##
 
 def dump_html_to_file(d, rec):
@@ -365,7 +357,7 @@ def dump_html_to_file(d, rec):
 
 #######################################################
 
-## Check if File exists ##
+## Check if file exists ##
 
 def checkFile():
     is_true = os.path.isfile("./api_keys.txt")
