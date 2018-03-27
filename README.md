@@ -112,6 +112,8 @@ python gasmask.py -i censys --tags heartbleed --report location.country.raw
 
 python gasmask.py -i censys -S NGINX --count
 
+python gasmask.py -i censys -d example.com
+
 python gasmask.py -i censys -t "Logon Error Message" -S ABAP -m "ICF-nf-http" --limit 10
 
 
