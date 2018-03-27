@@ -51,11 +51,10 @@ from dns import reversename, resolver
 import requests
 import time
 import mmap
-from pprint          import pprint
-from urllib          import quote,unquote
-from colorama        import Fore, Back, Style
+from pprint import pprint
+from urllib import quote,unquote
+from colorama import Fore, Back, Style
 import tempfile
-import argparse
 import pickle
 import time
 
