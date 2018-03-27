@@ -1995,7 +1995,7 @@ def MainFunc():
             print
             res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
             res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
-            if (res1 == False or res2 == False): 
+            if (res1 == False and res2 == False): 
                 print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
             print
         else:         
@@ -2023,7 +2023,7 @@ def MainFunc():
                                     for line in lines:                              
                                         res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
                                         res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
-                                        if (res1 == False or res2 == False): 
+                                        if (res1 == False and res2 == False): 
                                             print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
                                         print
                                         flag=1
@@ -2056,7 +2056,7 @@ def MainFunc():
                                     for line in lines:                                
                                        res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
                                        res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
-                                       if (res1 == False or res2 == False): 
+                                       if (res1 == False and res2 == False): 
                                             print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
                                        print
                             else:
@@ -2071,7 +2071,7 @@ def MainFunc():
                                     for line in lines:                                        
                                         res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
                                         res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
-                                        if (res1 == False or res2 == False): 
+                                        if (res1 == False and res2 == False): 
                                             print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
                                         print
                                                 
@@ -2087,8 +2087,10 @@ def MainFunc():
                                         print "[+] Searching in Censys.io.."  
                                         print
                                         for line in lines:                         
-                                            DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
-                                            CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
+                                            res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
+                                            res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
+                                            if (res1 == False and res2 == False): 
+                                                print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
                                             print
                         else:
                             print "[*] Exiting..."
