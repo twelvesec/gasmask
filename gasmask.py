@@ -138,7 +138,7 @@ def print_short(res):
 
 ## Censys.io Public Scan - Censys.io ##
 
-def CensysPublicScan(api_id , api_sec, output_basename, args, report_buckets, filter_fields):    
+def CensysPublicScan(api_id , api_sec, output_basename, args, report_buckets, filter_fields, match):    
 
     if (args.mode == 'censys' and ( args.Limit != float('inf') or  args.asn != None or args.report != None or args.html != False or args.http_server != None or args.tags != None or args.cert_org != None or args.cert_host != None or args.count != False or args.html_body != None or  args.html_title != None or args.country != None ) ):
         q,s = BuildQuery(api_id , api_sec, args)    
@@ -1990,7 +1990,7 @@ def MainFunc():
             print "[+] Searching in Censys.io.."
             print
             DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename)
-            CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields)
+            CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
             print
         else:         
                 chkstored = checkFile()
@@ -2016,7 +2016,7 @@ def MainFunc():
                                     print    
                                     for line in lines:                              
                                         DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
-                                        CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields)
+                                        CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
                                         print
                                         flag=1
                         else:
@@ -2047,7 +2047,7 @@ def MainFunc():
                                     print
                                     for line in lines:                                
                                        DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
-                                       CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields)
+                                       CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
                                        print
                             else:
                                 print "[*] Exiting..."
@@ -2060,7 +2060,7 @@ def MainFunc():
                                     print
                                     for line in lines:                                        
                                         DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
-                                        CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields)
+                                        CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
                                         print
                                                 
                     if ((args.read_api_keys == True or args.read_api_keys == True ) and (args.mode == 'censys') and flag != 1):
@@ -2076,7 +2076,7 @@ def MainFunc():
                                         print
                                         for line in lines:                         
                                             DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
-                                            CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields)
+                                            CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
                                             print
                         else:
                             print "[*] Exiting..."
@@ -2110,14 +2110,9 @@ if __name__ == '__main__':
 
     try:
         MainFunc()
-    except Exception as ex:
-        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-        message = template.format(type(ex).__name__, ex.args)
-        print message
-    '''
     except KeyboardInterrupt:
         print "Search interrupted by user.."
     except:
         sys.exit()
-    '''
+
 #######################################################
