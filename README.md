@@ -102,7 +102,7 @@ python gasmask.py -d example.com -i basic,yahoo,github -o myresults/example_com_
 
 ```
 
-python gasmask.py -i censys --limit 20 nmap
+python gasmask.py -i censys --Limit 20 nmap
 
 python gasmask.py -i censys -I ABAP --report location.country.raw --report_bucket 10
 
