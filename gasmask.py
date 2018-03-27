@@ -188,7 +188,7 @@ def CensysPublicScan(api_id , api_sec, output_basename, args, report_buckets, fi
                 if match != 'None': print_match(q.view(e['ip']), match)
                 i += 1
     else: 
-        print "[!] Please provide one of the Censys.io options in order to continue searching. For more information about the available options use the following option '--help'"
+        return False
 
 #######################################################
 
@@ -403,7 +403,7 @@ def DomainSearchCensys(domain_name, api_ip, api_sec, output_basename, domains):
         domains.extend(temp1)
         SubdomainsReport('Censys', temp1, output_basename)
     else:
-        print "[!] Domain is missing. Please provide a domain to search.."
+        return False
 
 #######################################################
 
@@ -1993,8 +1993,10 @@ def MainFunc():
         if (args.censys_api_id != None and args.censys_api_secret != None):
             print "[+] Searching in Censys.io.."
             print
-            DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename)
-            CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
+            res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
+            res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
+            if (res1 == False or res2 == False): 
+                print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
             print
         else:         
                 chkstored = checkFile()
@@ -2019,8 +2021,10 @@ def MainFunc():
                                     print "[+] Searching in Censys.io.."
                                     print    
                                     for line in lines:                              
-                                        DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
-                                        CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
+                                        res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
+                                        res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
+                                        if (res1 == False or res2 == False): 
+                                            print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
                                         print
                                         flag=1
                         else:
@@ -2050,8 +2054,10 @@ def MainFunc():
                                     print "[+] Searching in Censys.io.." 
                                     print
                                     for line in lines:                                
-                                       DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
-                                       CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
+                                       res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
+                                       res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
+                                       if (res1 == False or res2 == False): 
+                                            print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
                                        print
                             else:
                                 print "[*] Exiting..."
@@ -2063,8 +2069,10 @@ def MainFunc():
                                     print "[+] Searching in Censys.io.."
                                     print
                                     for line in lines:                                        
-                                        DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
-                                        CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
+                                        res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
+                                        res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match)
+                                        if (res1 == False or res2 == False): 
+                                            print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
                                         print
                                                 
                     if ((args.read_api_keys == True or args.read_api_keys == True ) and (args.mode == 'censys') and flag != 1):
