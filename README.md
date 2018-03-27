@@ -98,11 +98,11 @@ python gasmask.py -d example.com -i basic,yahoo,github -o myresults/example_com_
 
 python gasmask.py -i censys --limit 20 nmap
 
-python gasmask.py -i ABAP --report location.country.raw --report_bucket 10
+python gasmask.py -i censys -I ABAP --report location.country.raw --report_bucket 10
 
-python gasmask.py --html-title "Hacked by" --limit 20 --html
+python gasmask.py -i censys --html-title "Hacked by" --Limit 20 --html
 
-python gasmask.py --tags heartbleed --report location.country.raw
+python gasmask.py -i censys --tags heartbleed --report location.country.raw
 
 
 
