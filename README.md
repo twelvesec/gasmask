@@ -99,7 +99,7 @@ optional arguments:
   
   -R REPORT, --report REPORT, Stats on given field (use value 'help' for listing interesting fields)
 						
-  -B REPORT_BUCKET, --report_bucket REPORT_BUCKET,  Bucket len in report mode (default: 50)
+  -B REPORT_BUCKET, --report_bucket REPORT_BUCKET,  Bucket length in report mode (default: 50)
 						
   -1 CENSYS_API_ID, --censys_api_id CENSYS_API_ID,  Provide the authentication ID for the censys.io search engine
   
