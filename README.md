@@ -105,7 +105,7 @@ optional arguments:
   -r, --read_api_keys   Read the API Keys stored in api_keys.txt file. (e.g. '-i censys -r')
   -u, --update_api_keys
                         Update the API Keys stored in api_keys.txt file. (e.g. '-i censys -u')
-  -a ASN, --asn ASN     Filter with ASN (ex: 25408 for Westcall-SPB AS)
+  -a ASN, --asn ASN     Filter with ASN (ex: 5408 for GR-NET AS)
   -c COUNTRY, --country COUNTRY
                         Filter with country
   -O CERT_ORG, --cert-org CERT_ORG
