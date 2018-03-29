@@ -109,15 +109,15 @@ optional arguments:
   
   -u, --update_api_keys, Update the API Keys stored in api_keys.txt file. (e.g. '-i censys -u')
 						
-  -a ASN, --asn ASN,     Filter with ASN (ex: 5408 for GR-NET AS)
+  -a ASN, --asn ASN, Filter with ASN (ex: 5408 for GR-NET AS)
   
-  -c COUNTRY, --country, COUNTRY, Filter with country
+  -c COUNTRY, --country COUNTRY, Filter with country
   
-  -O CERT_ORG, --cert-org, CERT_ORG, Certificate issued to organization
+  -O CERT_ORG, --cert-org CERT_ORG, Certificate issued to organization
   
-  -I CERT_ISSUER, --cert-issuer, CERT_ISSUER,  Certificate issued by organization
+  -I CERT_ISSUER, --cert-issuer CERT_ISSUER,  Certificate issued by organization
   
-  -z CERT_HOST, --cert-host, CERT_HOST,  hostname Certificate is issued to
+  -z CERT_HOST, --cert-host CERT_HOST,  hostname Certificate is issued to
 						
   -S HTTP_SERVER, --http-server HTTP_SERVER, Server header
   
