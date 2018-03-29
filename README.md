@@ -172,7 +172,7 @@ python gasmask.py -i censys -r
 
 ```
 
-### Update the API Keys usage example - e.g in censys.io usage example 
+### Update the API Keys usage example - e.g in censys.io  
 
 ```
 python gasmask.py -i censys -u 
