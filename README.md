@@ -109,7 +109,7 @@ optional arguments:
   
   -u, --update_api_keys, Update the API Keys stored in api_keys.txt file. (e.g. '-i censys -u')
 						
-  -a ASN, --asn ASN, Filter with ASN (ex: 5408 for GR-NET AS)
+  -a ASN, --asn ASN, Filter with ASN (e.g 5408 for GR-NET AS)
   
   -c COUNTRY, --country COUNTRY, Filter with country
   
