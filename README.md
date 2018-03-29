@@ -13,6 +13,9 @@ Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.c
 * python-whois
 * dnspython
 * requests
+* censys
+* mmap
+* pprint
 
 ### Information Gathering
 
