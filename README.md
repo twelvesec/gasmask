@@ -165,14 +165,14 @@ python gasmask.py -i censys -t "Internal Server Error" -S Apache -m "HTTP 500" -
 
 ```
 
-Read the API Keys e.g in censys.io 
+### Read the API Keys e.g in censys.io 
 
 ```
 python gasmask.py -i censys -r 
 
 ```
 
-Update the API Keys e.g in censys.io
+### Update the API Keys e.g in censys.io
 
 ```
 python gasmask.py -i censys -u 
