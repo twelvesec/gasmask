@@ -122,7 +122,7 @@ optional arguments:
                         Filter on html body content
   -T TAGS, --tags TAGS  Filter on specific tags. e.g: -T tag1,tag2,... (use keyword 'list' to list usual tags
   -L LIMIT, --Limit LIMIT
-                        Limit to N results
+                        Limit to N results ( for censys.io )
   -D, --debug           Debug informations
   -v, --verbose         Print raw JSON records
   -H, --html            Renders html elements in a browser
