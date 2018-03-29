@@ -144,7 +144,7 @@ python gasmask.py -d example.com -i basic,yahoo,github -o myresults/example_com_
 
 ```
 
-### censys.io usage example 
+### censys.io usage examples 
 
 ```
 
@@ -165,14 +165,14 @@ python gasmask.py -i censys -t "Internal Server Error" -S Apache -m "HTTP 500" -
 
 ```
 
-### Read the API Keys e.g in censys.io 
+### Read the API Keys usage example - e.g in censys.io  
 
 ```
 python gasmask.py -i censys -r 
 
 ```
 
-### Update the API Keys e.g in censys.io
+### Update the API Keys usage example - e.g in censys.io usage example 
 
 ```
 python gasmask.py -i censys -u 
