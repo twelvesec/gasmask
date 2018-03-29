@@ -17,7 +17,6 @@ Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.c
 * mmap
 * pprint
 
-
 ### Information Gathering
 
 * ask
