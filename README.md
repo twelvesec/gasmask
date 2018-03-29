@@ -148,11 +148,11 @@ python gasmask.py -d example.com -i basic,yahoo,github -o myresults/example_com_
 
 ```
 
-python gasmask.py -i censys --Limit 20 nmap
+python gasmask.py -i censys --Limit 10 nessus
 
-python gasmask.py -i censys -I ABAP --report location.country.raw --report_bucket 10
+python gasmask.py -i censys -I JBOSS --report location.country.raw --report_bucket 10
 
-python gasmask.py -i censys --html-title "Hacked by" --Limit 20 --html
+python gasmask.py -i censys --html-title "Padding Oracle" --Limit 10 --html
 
 python gasmask.py -i censys --tags heartbleed --report location.country.raw
 
@@ -160,7 +160,7 @@ python gasmask.py -i censys -S NGINX --count
 
 python gasmask.py -i censys -d example.com
 
-python gasmask.py -i censys -t "Logon Error Message" -S ABAP -m "ICF-nf-http" --limit 10
+python gasmask.py -i censys -t "Internal Server Error" -S Apache -m "HTTP 500" --Limit 15
 
 
 ```
