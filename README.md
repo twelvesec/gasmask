@@ -162,9 +162,9 @@ python gasmask.py -d example.com -i basic,yahoo,github -o myresults/example_com_
 
 python gasmask.py -i censys --Limit 10 nessus
 
-python gasmask.py -i censys -I JBOSS --report location.country.raw --report_bucket 10
+python gasmask.py -i censys -I SAP --report location.country.raw --report_bucket 10
 
-python gasmask.py -i censys --html-title "Padding Oracle" --Limit 10 --html
+python gasmask.py -i censys --html-title "Hacked By" --Limit 10 --html
 
 python gasmask.py -i censys --tags heartbleed --report location.country.raw
 
