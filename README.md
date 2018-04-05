@@ -20,12 +20,15 @@ Written by:
 * dnspython
 * requests
 * shodan
+* censys
+* mmap
 
 ### Information Gathering
 
 * ask
 * bing
 * crt
+* censys.io
 * dns
 * dnsdumpster
 * dogpile
@@ -67,12 +70,14 @@ sudo pip install -r requirements.txt
 \____/\__,_/____/_/  /_/\__,_/____/_/ |_|
 
 GasMasK - All in one Information gathering tool - OSINT
-Ver. 1.0
+Ver. 1.2
 Written by: @maldevel
 https://www.twelvesec.com/
 
 usage: gasmask.py [-h] -d DOMAIN [-s NAMESERVER] [-x PROXY] [-l LIMIT]
-                  [-i MODE] [-o BASENAME]
+                  [-i MODE] [-o BASENAME] [-k API-KEY]
+                  [--censys-api-id CENSYS_API_ID]
+                  [--censys-api-secret CENSYS_API_SECRET]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -83,12 +88,16 @@ optional arguments:
   -x PROXY, --proxy PROXY
                         Use a proxy server when retrieving results from search engines (eg. '-x http://127.0.0.1:8080')
   -l LIMIT, --limit LIMIT
-                        Limit the number of search engine results (default: 100)                                                          .
-  -i MODE, --info MODE  Limit information gathering (basic,whois,dns,revdns,vhosts,google,bing,yahoo,ask,dogpile,yandex,linkedin,twitter,googleplus,youtube,reddit,github,instagram,crt,pgp,netcraft,virustotal,dnsdump,shodan).
+                        Limit the number of search engine results (default: 100).
+  -i MODE, --info MODE  Limit information gathering (basic,whois,dns,revdns,vhosts,google,bing,yahoo,ask,dogpile,yandex,linkedin,t                             witter,googleplus,youtube,reddit,github,instagram,crt,pgp,netcraft,virustotal,dnsdump,shodan,censys).
   -o BASENAME, --output BASENAME
                         Output in the four major formats at once (markdown, txt, xml and html).
   -k API-KEY, --shodan-key API-KEY
                         API key to use with Shodan search (MODE="shodan")
+  --censys-api-id CENSYS_API_ID
+                        Provide the authentication ID for the censys.io search engine
+  --censys-api-secret CENSYS_API_SECRET
+                        Provide the secret hash for the censys.io search engine
 ```
 
 ---

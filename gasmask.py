@@ -30,7 +30,7 @@
 __author__ = "maldevel"
 __credits__ = ["maldevel", "mikismaos", "xvass"]
 __license__ = "GPLv3"
-__version__ = "1.1"
+__version__ = "1.2"
 
 #######################################################
 
@@ -548,7 +548,7 @@ def PGPSearch(value, uas, proxies):
         s = requests.Session()
         r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
         if r.status_code != 200:
-			print "[-] Something is going wrong (status code: {})".format(r.status_code)
+            print "[-] Something is going wrong (status code: {})".format(r.status_code)
             return [], []
         results += r.content
     except Exception,e:
@@ -729,8 +729,6 @@ def ShodanSearch(domain, api_key):
 
     return sorted(set(vhosts))
 
-=======
->>>>>>> Censys.io subdomains searching - Final report output fixes
 #######################################################
 
 ## Emails & Hostnames Console report ##

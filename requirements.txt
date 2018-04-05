@@ -4,4 +4,3 @@ dnspython
 requests
 shodan
 censys
-mmap
