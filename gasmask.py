@@ -28,6 +28,7 @@
 """
 
 __author__ = "maldevel"
+__credits__ = ["maldevel", "mikismaos", "xvass"]
 __license__ = "GPLv3"
 __version__ = "1.1"
 
@@ -35,6 +36,7 @@ __version__ = "1.1"
 
 import argparse
 from argparse import RawTextHelpFormatter
+import censys.certificates
 import validators
 import sys
 import socket
@@ -527,7 +529,6 @@ def DNSDumpsterSearch(value, uas, proxies):
         if pr.status_code != 200:
             print "[-] Something is going wrong (status code: {})".format(pr.status_code)
             return [], []
-
     except Exception,e:
         print e
 
@@ -547,7 +548,7 @@ def PGPSearch(value, uas, proxies):
         s = requests.Session()
         r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
         if r.status_code != 200:
-            print "[-] Something is going wrong (status code: {})".format(r.status_code)
+			print "[-] Something is going wrong (status code: {})".format(r.status_code)
             return [], []
         results += r.content
     except Exception,e:
@@ -569,8 +570,8 @@ def NetcraftSearch(value, uas, proxies):
         s = requests.Session()
         r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
         if r.status_code != 200:
-            print "[-] Something is going wrong (status code: {})".format(r.status_code)
-            return [], []
+			print "[-] Something is going wrong (status code: {})".format(r.status_code)
+			return [], []
         results += r.content
     except Exception,e:
         print e
@@ -591,8 +592,8 @@ def VTSearch(value, uas, proxies):
         s = requests.Session()
         r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
         if r.status_code != 200:
-            print "[-] Something is going wrong (status code: {})".format(r.status_code)
-            return [], []
+			print "[-] Something is going wrong (status code: {})".format(r.status_code)
+			return [], []
         results += r.content
     except Exception,e:
         print e
@@ -617,8 +618,8 @@ def SiteSearch(value, site, limit, uas, proxies, timeouts):
             s = requests.Session()
             r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
             if r.status_code != 200:
-                print "[-] Something is going wrong (status code: {})".format(r.status_code)
-                return [], []
+				print "[-] Something is going wrong (status code: {})".format(r.status_code)
+				return [], []
             results += r.content
         except Exception,e:
             print e
@@ -627,6 +628,26 @@ def SiteSearch(value, site, limit, uas, proxies, timeouts):
         counter += step
 
     return GetEmails(results, value), GetHostnames(results, value)
+
+#######################################################
+
+## Censys.io search ##
+
+def CensysSearch(value, api_id, api_secret):
+    try:
+        censys_certificates = censys.certificates.CensysCertificates(api_id=api_id, api_secret=api_secret)
+        certificate_query = 'parsed.names: %s' % value
+        certificates_search_results = censys_certificates.search(certificate_query, fields=['parsed.names'])
+        subdomains = []
+        for search_result in certificates_search_results:
+            subdomains.extend(search_result['parsed.names'])
+        return set(subdomains)
+    except censys.base.CensysUnauthorizedException:
+        sys.stderr.write('[-] Your Censys credentials look invalid.\n')
+        exit(1)
+    except censys.base.CensysRateLimitExceededException:
+        sys.stderr.write('[-] Looks like you exceeded your Censys account limits rate. Exiting\n')
+        exit(1)
 
 #######################################################
 
@@ -671,18 +692,45 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
 ## Shodan Search ##
 
 def ShodanSearch(domain, api_key):
-    
+
     api = shodan.Shodan(api_key)
-            
+
     # Wrap the request in a try/ except block to catch errors
     try:
             # Search by hostname
             query = 'hostname:'+domain
             return api.search(query)
-                              
+
     except shodan.APIError, e:
             print 'Error: %s' % e
 
+    while counter <= limit:
+        try:
+            url = "https://" + server + "/search?q=ip%3A" + value + "&go=&count=" + str(quantity) + "&FORM=QBHL&qs=n&first=" + str(counter)
+            s = requests.Session()
+            r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+            if r.status_code != 200:
+                 print "[-] Something is going wrong (status code: {})".format(r.status_code)
+                 return [], []
+            results += r.content
+        except Exception,e:
+            print e
+
+        time.sleep(PickRandomTimeout(timeouts))
+        counter += step
+
+    all_hostnames = GetHostnamesAll(results)
+
+    for x in all_hostnames:
+        x = re.sub(r'[[\<\/?]*[\w]*>]*','',x)
+        x = re.sub('<','',x)
+        x = re.sub('>','',x)
+        vhosts.append(x)
+
+    return sorted(set(vhosts))
+
+=======
+>>>>>>> Censys.io subdomains searching - Final report output fixes
 #######################################################
 
 ## Emails & Hostnames Console report ##
@@ -749,6 +797,56 @@ def Report(engine, emails, hostnames, output_basename):
             txt.write("\n")
             md.write("\n")
             xml.write("</{}Results>\n".format(engine))
+            
+#######################################################
+
+## Subdomains Console report ##
+
+def SubdomainsReport(engine, subdomains, output_basename):
+
+    if len(subdomains) is 0:
+        print('[-] Did not find any subdomain')
+        return
+ 
+    print('')
+    print('[*] Found %d subdomains' % (len(subdomains)))
+    print('')
+    for subdomain in subdomains:
+        print(subdomain) 
+    print('')
+    
+    if output_basename:
+        output1 = output_basename + ".txt"
+        output2 = output_basename + ".md"
+        output3 = output_basename + ".xml"
+        output4 = output_basename + ".html"
+
+        with open(output1, 'a') as txt, open(output2, 'a') as md, open(output3, 'a') as xml, open(output4, 'a') as html:
+            txt.write("[+] {} results\n".format(engine))
+            txt.write("-------------------------\n")
+            md.write("---\n\n")
+            md.write("## {} results\n".format(engine))
+            xml.write("<{}Results>\n".format(engine))
+            html.write("<h3>{} results</h3>\n".format(engine))
+
+            txt.write("\n")
+            md.write("\n")
+
+            txt.write("Subdomains:\n")
+            md.write("### Subdomains\n\n")
+            xml.write("<Subdomains>\n")
+            html.write("<h4>Subdomains</h4>\n<ul>\n")
+
+            for email in emails:
+                txt.write("{}\n".format(email))
+                md.write("* {}\n".format(email))
+                xml.write("<Subdomain>{}</Subdomains>\n".format(email))
+                html.write("<li>{}</li>\n".format(email))
+
+            html.write("</ul>\n")
+            xml.write("</Subdomains>\n")
+            txt.write("\n")
+            md.write("\n")
 
 #######################################################
 
@@ -761,12 +859,12 @@ def ShodanReport(results, output_basename):
     print
     print 'Results found: %s' % results['total']
     print '------------------'
-    print            
+    print
 
     # pdb.set_trace()
 
     for result in results['matches']:
-        
+
         # Print host info
         print 'IP: %s' % result['ip_str']
         print '-------------------'
@@ -782,21 +880,7 @@ def ShodanReport(results, output_basename):
             print result['data']
             print
 
-    '''
-    # Search by IP        
-    for ip in ip_addr:
-        host = api.host(ip)
-             
-        print 'IP: %s' % host['ip_str']
-        print 'Organization: %s' % host.get('org', 'n/a')
-        print 'Hostnames: ' + ','.join(host.get('hostnames','n/a'))
-        print 'Operating System: %s' % host.get('os', 'n/a')
-        for item in host['data']:
-            print 'Port: %s ' % item['port']
-            print 'Banner: %s' % item['data']
-    '''
-    
-    # Output to file    
+    # Output to file
     if output_basename:
         output1 = output_basename + ".txt"
         output2 = output_basename + ".md"
@@ -810,45 +894,45 @@ def ShodanReport(results, output_basename):
             md.write("## {} results\n".format(engine))
             xml.write("<{}Results>\n".format(engine))
             html.write("<h3>{} results</h3>\n".format(engine))
-    
+
             txt.write("\n")
             md.write("\n")
 
             for result in results['matches']:
-            
+
                 ip = result['ip_str']
                 hostnames = ','.join(result['hostnames'])
                 organization = result.get('org','n/a')
                 os = result.get('os','n/a')
                 port = result['port']
                 banner = result['data']
-            
+
                 # Print IP
                 PrintField("IP", ip, txt, md, xml, html)
 
                 # Print Hostnames
                 PrintField("Hostnames", hostnames, txt, md, xml, html)
-                
+
                 # Print Organization
                 PrintField("Organization", organization, txt, md, xml, html)
 
                 # Print Operating System
                 PrintField("OS", os, txt, md, xml, html)
-                
+
                 # Print Port
                 PrintField("Port", port, txt, md, xml, html)
-                
+
                 # Print Banner
-                PrintField("Banner", banner, txt, md, xml, html)                
-                
+                PrintField("Banner", banner, txt, md, xml, html)
+
             xml.write("</{}Results>\n".format(engine))
-            
+
 #######################################################
 
 ## Print field to output files
 
 def PrintField(label, value, txt, md, xml, html):
-    
+
     txt.write("{}:\n".format(label))
     md.write("### {}\n\n".format(label))
     xml.write("<{}>\n".format(label))
@@ -1189,20 +1273,32 @@ def VHostsReport(data, output_basename):
 
 def FinalReport(info, output_basename):
 
+    
     print
     print "[+] Search engines results - Final Report"
     print "-----------------------------------------"
 
-    print
-    print "Emails:"
-    for email in info['all_emails']:
-        print email
+    if (info['all_emails'] != []):
+        print
+        print "Emails:"
+        print
+        for email in info['all_emails']:
+            print email
 
-    print
-    print "Hostnames:"
-    for host in info['all_hosts']:
-        print host
-    print
+    if (info['all_hosts'] != []):
+        print
+        print "Hostnames:"
+        print
+        for host in info['all_hosts']:
+            print host
+        
+    if (info['domains'] != []):
+        print
+        print "Subdomains:"
+        print
+        for domains in info['domains']:
+            print domains
+        print
 
     if output_basename:
         output1 = output_basename + ".txt"
@@ -1252,6 +1348,22 @@ def FinalReport(info, output_basename):
             xml.write("</Hostnames>\n")
             txt.write("\n")
             md.write("\n")
+            
+            txt.write("Subdomains:\n")
+            md.write("### Subdomains\n\n")
+            xml.write("<Subdomains>\n")
+            html.write("<h4>Subdomains</h4>\n<ul>\n")
+
+            for host in info['domain']:
+                txt.write("{}\n".format(host))
+                md.write("* {}\n".format(host))
+                xml.write("<Subdomain>{}</Subdomain>\n".format(host))
+                html.write("<li>{}</li>\n".format(host))
+
+            html.write("</ul>\n")
+            xml.write("</Subdomain>\n")
+            txt.write("\n")
+            md.write("\n")            
             xml.write("</FinalReport>\n")
 
 #######################################################
@@ -1265,6 +1377,7 @@ def MainFunc():
     info = {}
     info['all_emails'] = []
     info['all_hosts'] = []
+    info['domains'] = []
     uas = []
 
     user_agent_strings_file = 'common-ua.txt'
@@ -1272,7 +1385,7 @@ def MainFunc():
 
     modes = ['basic','whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo',
         'ask', 'dogpile', 'yandex', 'linkedin', 'twitter', 'googleplus', 'youtube', 'reddit',
-        'github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal', 'dnsdump', 'shodan']
+        'github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal', 'dnsdump', 'shodan', 'censys']
 
     parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 
@@ -1290,8 +1403,9 @@ def MainFunc():
         type=str, default=None, help='Output in the four major formats at once (markdown, txt, xml and html).')
     parser.add_argument('-k', '--shodan-key', action='store', metavar='API-KEY', dest='shodankey',
         type=str, default=None, help='API key to use with Shodan search (MODE="shodan")')
+    parser.add_argument('--censys-api-id',action='store', dest='censys_api_id',type=str, default=None, help='Provide the authentication ID for the censys.io search engine')
+    parser.add_argument('--censys-api-secret',action='store', dest='censys_api_secret',type=str, default=None, help='Provide the secret hash for the censys.io search engine')
 
-    
     if len(sys.argv) is 1:
         parser.print_help()
         sys.exit()
@@ -1417,13 +1531,12 @@ def MainFunc():
             if args.shodankey is None:
                 print("[-] API key required for the Shodan search: '-k API-KEY, --shodan-key API-KEY'")
                 sys.exit()
-            
             print "[+] Shodan search.."
             print "-------------------"
 
             results = ShodanSearch(info['domain'], args.shodankey)
             ShodanReport(results, output_basename)
-               
+
 #######################################################
 
 ## ASK search ##
@@ -1586,10 +1699,21 @@ def MainFunc():
 
 #######################################################
 
+## Censys.io search ##
+
+    if any(i in ['censys'] for i in info['mode']):
+        print "[+] Searching in Censys.io.."
+        temp1 = CensysSearch(info['domain'], args.censys_api_id , args.censys_api_secret)
+        info['domains'].extend(temp1)
+        SubdomainsReport('Censys', temp1, output_basename)
+
+#######################################################
+
 ## Search Results Final Report ##
 
     info['all_emails'] = sorted(set(info['all_emails']))
     info['all_hosts'] = sorted(set(info['all_hosts']))
+    info['domains'] = sorted(set(info['domains']))
     FinalReport(info, output_basename)
 
 #######################################################
@@ -1603,6 +1727,15 @@ def MainFunc():
         with open(output, 'a') as xml, open(output1, 'a') as html:
             xml.write("</report>\n")
             html.write("</body></html>\n")
+
+#######################################################
+
+## Censys.io search ##
+
+    if any(i in ['censys'] for i in info['mode']):
+        print "[+] Searching in Censys.io.."
+        temp1 = CensysSearch(info['domain'], info['censys_api_id'], info['censys_api_secret'])
+        info['domain'].extend(temp1)
 
 #######################################################
 
