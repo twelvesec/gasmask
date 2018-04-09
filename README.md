@@ -114,6 +114,8 @@ python gasmask.py -d example.com -i shodan -k xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 python gasmask.py -d example.com -i whois,dns,revdns
 
 python gasmask.py -d example.com -i basic,yahoo,github -o myresults/example_com_search_results
+
+python gasmask.py -d example.com -i censys --censys-api-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --censys-api-secret xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 ---
