@@ -85,7 +85,7 @@ https://www.twelvesec.com/
 
 def print_short(res):
     max_title_len = 50
-    public_info = []
+   # public_info = []
     title_head = 'Title: '
     cut = '[...]'
     http_title = res.get('80.http.get.title', 'N/A')
@@ -131,7 +131,7 @@ def print_short(res):
         ('Loc: %s' % loc).ljust(30) + \
         ('OS: %s' % os).ljust(15) + \
         ('Tags: %s' % tags)
-        
+    '''    
     public_info = ip.ljust(16) + \
         ((title_head + '%s') % http_title).ljust(max_title_len) + \
         ('SSL: %s' % cert_name).ljust(50) + \
@@ -141,7 +141,7 @@ def print_short(res):
         ('Tags: %s' % tags)
 
     return public_info
-      
+      '''
 #######################################################
 
 ## Censys Public Scan report ##
@@ -237,9 +237,9 @@ def CensysPublicScan(api_id , api_sec, output_basename, args, report_buckets, fi
                 if match != 'None': print_match(q.view(e['ip']), match)
                 i += 1
                 
-        CensysPublicReport('censys', public_info2, output_basename)
-    else: 
-        return False
+       # CensysPublicReport('censys', public_info2, output_basename)
+    #else: 
+       # return False
 
 #######################################################
 
