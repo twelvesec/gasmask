@@ -2,7 +2,7 @@
 
 All in one Information gathering tool - OSINT
 
-Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.com/maldevel)) [mikismaos](https://github.com/mikismaos) [xvass]((https://github.com/xvass)
+Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.com/maldevel)) [mikismaos](https://github.com/mikismaos) [xvass](https://github.com/xvass)
 
 ---
 
