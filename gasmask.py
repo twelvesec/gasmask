@@ -5,7 +5,7 @@
     GasMasK - All in one Information gathering tool - OSINT
     This file is part of GasMasK Project
 
-    Written by: @maldevel
+    Written by: @maldevel, @mikismaos, @xvass
     Website: https://www.twelvesec.com/
     GIT: https://github.com/twelvesec/gasmask
 
@@ -74,7 +74,7 @@ message = """
 
 GasMasK - All in one Information gathering tool - OSINT
 Ver. {}
-Written by: @maldevel
+Written by: @maldevel, @mikismaos, @xvass
 https://www.twelvesec.com/
 """.format(__version__)
 
