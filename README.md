@@ -2,7 +2,7 @@
 
 All in one Information gathering tool - OSINT
 
-Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.com/maldevel))
+Written by: [maldevel](https://github.com/maldevel) ([twitter](https://twitter.com/maldevel)) [mikismaos](https://github.com/mikismaos) [xvass]((https://github.com/xvass)
 
 ---
 
@@ -65,7 +65,7 @@ sudo pip install -r requirements.txt
 
 GasMasK - All in one Information gathering tool - OSINT
 Ver. 1.0
-Written by: @maldevel
+Written by: @maldevel, @mikismaos, @xvass
 https://www.twelvesec.com/
 
 usage: gasmask.py [-h] [-d DOMAIN] [-s NAMESERVER] [-x PROXY] [-l LIMIT]
