@@ -30,15 +30,13 @@
 __author__ = "maldevel"
 __credits__ = ["maldevel", "mikismaos", "xvass"]
 __license__ = "GPLv3"
-__version__ = "1.1"
+__version__ = "1.3"
 
 #######################################################
 
 import argparse
 from argparse import RawTextHelpFormatter
 import censys.certificates
-from censys.ipv4 import *
-from censys.base import *
 import validators
 import sys
 import socket
@@ -51,13 +49,8 @@ import random
 from dns import reversename, resolver
 import requests
 import time
-import mmap
-from pprint import pprint
-from urllib import quote,unquote
-from colorama import Fore, Back, Style
-import tempfile
-import pickle
-import time
+import shodan
+import pdb
 
 #######################################################
 
@@ -78,7 +71,6 @@ Ver. {}
 Written by: @maldevel
 https://www.twelvesec.com/
 """.format(__version__)
-
 
 #######################################################
 
@@ -508,10 +500,9 @@ def updateAPIKeys(engine):
 ## Validate Domain name ##
 
 def CheckDomain(value):
-    if value != None:
-        if not validators.domain(value):
-            raise argparse.ArgumentTypeError('Invalid {} domain.'.format(value))
-        return value
+    if not validators.domain(value):
+        raise argparse.ArgumentTypeError('Invalid {} domain.'.format(value))
+    return value
 
 #######################################################
 
@@ -556,21 +547,21 @@ def WhoisQuery(value):
     whoisData["creation_date"] = ["-", "Creation Date:"]
     whoisData["name_servers"] = ["-", "Name Servers:"]
 
-    dom = whois.whois(value)
+    domain = whois.whois(value)
 
     for rec in whoisData:
-        if dom[rec]:
-            if isinstance(dom[rec], list):
+        if domain[rec]:
+            if isinstance(domain[rec], list):
                 if rec is 'name_servers':
                     whoisData[rec][0] = []
-                    for val in dom[rec]:
+                    for val in domain[rec]:
                         whoisData[rec][0].append(val + ":" + VerifyHostname(val))
                 else:
                     whoisData[rec][0] = []
-                    for val in dom[rec]:
+                    for val in domain[rec]:
                         whoisData[rec][0].append(val)
             else:
-                whoisData[rec][0] = str(dom[rec])
+                whoisData[rec][0] = str(domain[rec])
 
     return whoisData
 
@@ -595,7 +586,9 @@ def _query(value, dnsserver, record):
                 return answer.to_text()
     except Exception as e:
         return '-'
+
     return dnsData
+
 
 def DnsQuery(value, dnsserver, record=None):
 
@@ -783,8 +776,8 @@ def CommonSearch(value, urltemplate, quantity, step, limit, uas, proxies, timeou
             s = requests.Session()
             r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
             if r.status_code != 200:
-                 print "[-] Something is going wrong (status code: {})".format(r.status_code)
-                 return [], []
+                print "[-] Something is going wrong (status code: {})".format(r.status_code)
+                return [], []
             results += r.content
         except Exception,e:
             print e
@@ -809,8 +802,8 @@ def CommonSearch2(value, urltemplate, step, limit, uas, proxies, timeouts):
             s = requests.Session()
             r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
             if r.status_code != 200:
-                 print "[-] Something is going wrong (status code: {})".format(r.status_code)
-                 return [], []
+                print "[-] Something is going wrong (status code: {})".format(r.status_code)
+                return [], []
             results += r.content
         except Exception,e:
             print e
@@ -896,8 +889,8 @@ def YandexSearch(value, limit, uas, proxies, timeouts):
             s = requests.Session()
             r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
             if r.status_code != 200:
-                 print "[-] Something is going wrong (status code: {})".format(r.status_code)
-                 return [], []
+                print "[-] Something is going wrong (status code: {})".format(r.status_code)
+                return [], []
             results += r.content
         except Exception,e:
             print e
@@ -922,8 +915,8 @@ def CrtSearch(value, uas, proxies):
         s = requests.Session()
         r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
         if r.status_code != 200:
-             print "[-] Something is going wrong (status code: {})".format(r.status_code)
-             return [], []
+            print "[-] Something is going wrong (status code: {})".format(r.status_code)
+            return [], []
         results += r.content
     except Exception,e:
         print e
@@ -946,8 +939,8 @@ def DNSDumpsterSearch(value, uas, proxies):
         myheaders={'User-Agent': PickRandomUA(uas), 'Referer': 'https://dnsdumpster.com'}
         r = s.get(url, verify=False, headers=myheaders, proxies=proxies, timeout=timeout)
         if r.status_code != 200:
-             print "[-] Something is going wrong (status code: {})".format(r.status_code)
-             return [], []
+            print "[-] Something is going wrong (status code: {})".format(r.status_code)
+            return [], []
 
         # get csrf token
         csrf_regex = re.compile("<input type='hidden' name='csrfmiddlewaretoken' value='(.*?)' />", re.S)
@@ -957,9 +950,8 @@ def DNSDumpsterSearch(value, uas, proxies):
         params = {'csrfmiddlewaretoken': token, 'targetip': value}
         pr = s.post(url, verify=False, headers=myheaders, proxies=proxies, data=params, timeout=timeout)
         if pr.status_code != 200:
-             print "[-] Something is going wrong (status code: {})".format(pr.status_code)
-             return [], []
-
+            print "[-] Something is going wrong (status code: {})".format(pr.status_code)
+            return [], []
     except Exception,e:
         print e
 
@@ -979,8 +971,8 @@ def PGPSearch(value, uas, proxies):
         s = requests.Session()
         r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
         if r.status_code != 200:
-             print "[-] Something is going wrong (status code: {})".format(r.status_code)
-             return [], []
+            print "[-] Something is going wrong (status code: {})".format(r.status_code)
+            return [], []
         results += r.content
     except Exception,e:
         print e
@@ -1001,8 +993,8 @@ def NetcraftSearch(value, uas, proxies):
         s = requests.Session()
         r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
         if r.status_code != 200:
-             print "[-] Something is going wrong (status code: {})".format(r.status_code)
-             return [], []
+			print "[-] Something is going wrong (status code: {})".format(r.status_code)
+			return [], []
         results += r.content
     except Exception,e:
         print e
@@ -1023,8 +1015,8 @@ def VTSearch(value, uas, proxies):
         s = requests.Session()
         r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
         if r.status_code != 200:
-             print "[-] Something is going wrong (status code: {})".format(r.status_code)
-             return [], []
+			print "[-] Something is going wrong (status code: {})".format(r.status_code)
+			return [], []
         results += r.content
     except Exception,e:
         print e
@@ -1049,8 +1041,8 @@ def SiteSearch(value, site, limit, uas, proxies, timeouts):
             s = requests.Session()
             r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
             if r.status_code != 200:
-                 print "[-] Something is going wrong (status code: {})".format(r.status_code)
-                 return [], []
+				print "[-] Something is going wrong (status code: {})".format(r.status_code)
+				return [], []
             results += r.content
         except Exception,e:
             print e
@@ -1059,11 +1051,10 @@ def SiteSearch(value, site, limit, uas, proxies, timeouts):
         counter += step
 
     return GetEmails(results, value), GetHostnames(results, value)
-    
 
 #######################################################
 
-## Censys.io subdomains search ##
+## Censys.io search ##
 
 def CensysSearch(value, api_id, api_secret):
     try:
@@ -1073,13 +1064,12 @@ def CensysSearch(value, api_id, api_secret):
         subdomains = []
         for search_result in certificates_search_results:
             subdomains.extend(search_result['parsed.names'])
-        
         return set(subdomains)
     except censys.base.CensysUnauthorizedException:
-        sys.stderr.write('[-] Your censys.io credentials are invalid. Please check your account API credentials.\n')
+        sys.stderr.write('[-] Your Censys credentials look invalid.\n')
         exit(1)
     except censys.base.CensysRateLimitExceededException:
-        sys.stderr.write('[-] You have exceeded your censys.io account limits. Exiting..\n')
+        sys.stderr.write('[-] Looks like you exceeded your Censys account limits rate. Exiting\n')
         exit(1)
 
 #######################################################
@@ -1094,6 +1084,48 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
     counter = 0
     results = ""
     vhosts = []
+
+    while counter <= limit:
+        try:
+            url = "https://" + server + "/search?q=ip%3A" + value + "&go=&count=" + str(quantity) + "&FORM=QBHL&qs=n&first=" + str(counter)
+            s = requests.Session()
+            r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
+            if r.status_code != 200:
+                print "[-] Something is going wrong (status code: {})".format(r.status_code)
+                return [], []
+            results += r.content
+        except Exception,e:
+            print e
+
+        time.sleep(PickRandomTimeout(timeouts))
+        counter += step
+
+    all_hostnames = GetHostnamesAll(results)
+
+    for x in all_hostnames:
+        x = re.sub(r'[[\<\/?]*[\w]*>]*','',x)
+        x = re.sub('<','',x)
+        x = re.sub('>','',x)
+        vhosts.append(x)
+
+    return sorted(set(vhosts))
+
+#######################################################
+
+## Shodan Search ##
+
+def ShodanSearch(domain, api_key):
+
+    api = shodan.Shodan(api_key)
+
+    # Wrap the request in a try/ except block to catch errors
+    try:
+            # Search by hostname
+            query = 'hostname:'+domain
+            return api.search(query)
+
+    except shodan.APIError, e:
+            print 'Error: %s' % e
 
     while counter <= limit:
         try:
@@ -1226,11 +1258,11 @@ def SubdomainsReport(engine, subdomains, output_basename):
             xml.write("<Subdomains>\n")
             html.write("<h4>Subdomains</h4>\n<ul>\n")
 
-            for domains in subdomains:
-                txt.write("{}\n".format(domains))
-                md.write("* {}\n".format(domains))
-                xml.write("<Subdomain>{}</Subdomains>\n".format(domains))
-                html.write("<li>{}</li>\n".format(domains))
+            for email in emails:
+                txt.write("{}\n".format(email))
+                md.write("* {}\n".format(email))
+                xml.write("<Subdomain>{}</Subdomains>\n".format(email))
+                html.write("<li>{}</li>\n".format(email))
 
             html.write("</ul>\n")
             xml.write("</Subdomains>\n")
@@ -1238,6 +1270,106 @@ def SubdomainsReport(engine, subdomains, output_basename):
             md.write("\n")
             
         
+
+#######################################################
+
+## Shodan Console Report ##
+
+def ShodanReport(results, output_basename):
+
+    engine = "Shodan"
+
+    print
+    print 'Results found: %s' % results['total']
+    print '------------------'
+    print
+
+    # pdb.set_trace()
+
+    for result in results['matches']:
+
+        # Print host info
+        print 'IP: %s' % result['ip_str']
+        print '-------------------'
+        print 'Hostnames: ' + ','.join(result['hostnames'])
+        print 'Organization: %s' % result.get('org','n/a')
+        print 'Operating System: %s' % result.get('os','n/a')
+        print 'Port: %s' % result['port']
+
+        # Print banner
+        banner = result.get('data')
+        if banner is not None:
+            print 'Banner:'
+            print result['data']
+            print
+
+    # Output to file
+    if output_basename:
+        output1 = output_basename + ".txt"
+        output2 = output_basename + ".md"
+        output3 = output_basename + ".xml"
+        output4 = output_basename + ".html"
+
+        with open(output1,'a') as txt, open(output2, 'a') as md, open(output3, 'a') as xml, open(output4, 'a') as html:
+            txt.write("[+] {} results\n".format(engine))
+            txt.write("-------------------------\n")
+            md.write("---\n\n")
+            md.write("## {} results\n".format(engine))
+            xml.write("<{}Results>\n".format(engine))
+            html.write("<h3>{} results</h3>\n".format(engine))
+
+            txt.write("\n")
+            md.write("\n")
+
+            for result in results['matches']:
+
+                ip = result['ip_str']
+                hostnames = ','.join(result['hostnames'])
+                organization = result.get('org','n/a')
+                os = result.get('os','n/a')
+                port = result['port']
+                banner = result['data']
+
+                # Print IP
+                PrintField("IP", ip, txt, md, xml, html)
+
+                # Print Hostnames
+                PrintField("Hostnames", hostnames, txt, md, xml, html)
+
+                # Print Organization
+                PrintField("Organization", organization, txt, md, xml, html)
+
+                # Print Operating System
+                PrintField("OS", os, txt, md, xml, html)
+
+                # Print Port
+                PrintField("Port", port, txt, md, xml, html)
+
+                # Print Banner
+                PrintField("Banner", banner, txt, md, xml, html)
+
+            xml.write("</{}Results>\n".format(engine))
+
+#######################################################
+
+## Print field to output files
+
+def PrintField(label, value, txt, md, xml, html):
+
+    txt.write("{}:\n".format(label))
+    md.write("### {}\n\n".format(label))
+    xml.write("<{}>\n".format(label))
+    html.write("<h4>{}</h4>\n<ul>\n".format(label))
+
+    txt.write("{}\n".format(value))
+    md.write("* {}\n".format(value))
+    xml.write("<{}>{}</{}>\n".format(label,value,label))
+    html.write("<li>{}</li>\n".format(value))
+
+    html.write("</ul>\n")
+    xml.write("</{}>\n".format(label))
+    txt.write("\n")
+    md.write("\n")
 
 #######################################################
 
@@ -1487,7 +1619,7 @@ def DNSReport(data, output_basename):
             md.write("\n")
             xml.write("</DNSQueries>\n")
             html.write("</ul>\n")
-            
+
 #######################################################
 
 ## Reverse DNS Console report ##
@@ -1563,14 +1695,13 @@ def VHostsReport(data, output_basename):
 ## All major formats final report ##
 
 def FinalReport(info, output_basename):
-    
 
-    if (info['all_emails'] != [] or info['all_hosts'] != [] or info['domains'] != []):
-        print
-        print "[+] Search engines results - Final Report"
-        print "-----------------------------------------"
     
-    if (info['all_emails'] != []):        
+    print
+    print "[+] Search engines results - Final Report"
+    print "-----------------------------------------"
+
+    if (info['all_emails'] != []):
         print
         print "Emails:"
         print
@@ -1592,7 +1723,7 @@ def FinalReport(info, output_basename):
             print domains
         print
 
-    if output_basename != None:
+    if output_basename:
         output1 = output_basename + ".txt"
         output2 = output_basename + ".md"
         output3 = output_basename + ".xml"
@@ -1646,11 +1777,11 @@ def FinalReport(info, output_basename):
             xml.write("<Subdomains>\n")
             html.write("<h4>Subdomains</h4>\n<ul>\n")
 
-            for domain in info['domains']:
-                txt.write("{}\n".format(domain))
-                md.write("* {}\n".format(domain))
-                xml.write("<Subdomain>{}</Subdomain>\n".format(domain))
-                html.write("<li>{}</li>\n".format(domain))
+            for host in info['domain']:
+                txt.write("{}\n".format(host))
+                md.write("* {}\n".format(host))
+                xml.write("<Subdomain>{}</Subdomain>\n".format(host))
+                html.write("<li>{}</li>\n".format(host))
 
             html.write("</ul>\n")
             xml.write("</Subdomain>\n")
@@ -1665,36 +1796,6 @@ def FinalReport(info, output_basename):
 def MainFunc():
 
     print message
-    
-    report_buckets=50
-    filter_fields = ['location.country', 'location.country_code', 'location.city', 'ip', \
-                     'protocols', 'autonomous_system.name', \
-                     'autonomous_system.asn', \
-                     '443.https.tls.certificate.parsed.subject.organization', \
-                     '443.https.tls.certificate.parsed.subject.common_name', \
-                     '443.https.tls.certificate.parsed.extensions.subject_alt_name.dns_names', \
-                     '993.imaps.tls.tls.certificate.parsed.subject.common_name', \
-                     '993.imaps.tls.tls.certificate.parsed.subject.organization',\
-                     '80.http.get.title',\
-                     '80.http.get.headers.server',\
-                     '80.http.get.body',\
-                     'metadata.os', 'tags']
-    report_fields = ['location.country_code', 'location.country.raw', 'ip', \
-                     'autonomous_system.asn', 'autonomous_system.organization.raw', \
-                     'autonomous_system.description.raw', \
-                     '443.https.tls.certificate.parsed.subject.common_name.raw', \
-                     '993.imaps.tls.tls.certificate.parsed.subject.common_name.raw', \
-                     '80.http.get.headers.server.raw', \
-                     "80.http.get.title.raw", \
-                     'metadata.os.raw', 'protocols', 'tags.raw']
-    # computed from --country US --report tags.raw
-    tags_available = ['http', 'https', 'ssh', 'ftp', 'smtp', 'pop3', 'imap', 'imaps', 'pop3s',
-                  'known-private-key', 'rsa-export', 'dhe-export', 'Update utility',
-                  'heartbleed', 'building control', 'scada', 'fox', 'NPM', 'bacnet', 'NPM6',
-                  'embedded', 'strip-starttls', 'modbus', 'NPM2', 'remote access', 'JACE',
-                  'JACE-7', 'NPM3', 'JACE-403', 'Running DD-WRT', 'JACE-545', 's7', 'dnp3',
-                  'Broken installation', 'scada processor', 'touchscreen', 'data center',
-                  'ethernet']
 
     info = {}
     info['all_emails'] = []
@@ -1706,8 +1807,10 @@ def MainFunc():
     user_agent_strings_file = 'common-ua.txt'
     timeouts = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
-    modes = ['basic','whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo','ask', 'dogpile', 'yandex','censys', 'linkedin', 'twitter', 'googleplus', 'youtube', 'reddit','github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal', 'dnsdump']
-    
+    modes = ['basic','whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo',
+        'ask', 'dogpile', 'yandex', 'linkedin', 'twitter', 'googleplus', 'youtube', 'reddit',
+        'github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal', 'dnsdump', 'shodan', 'censys']
+
     parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
     parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain',default=None, type=CheckDomain, help="Domain to search.")
     parser.add_argument("-s", '--server', action="store", metavar='NAMESERVER', dest='dnsserver',default='8.8.8.8', type=CheckDomainOrIP, help="DNS server to use.")
@@ -1715,7 +1818,7 @@ def MainFunc():
     parser.add_argument("-l", '--limit', action="store", metavar='LIMIT', dest='limit',type=int, default=100, help="Limit the number of search engine results (default: 100).")
     parser.add_argument("-i", '--info', action="store", metavar='MODE', dest='mode',type=str, default='basic', help="Limit information gathering (" + ','.join(modes) + ").")
     parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',type=str, default=None, help='Output in the four major formats at once (markdown, txt, xml and html).')
-     
+    parser.add_argument('-k', '--shodan-key', action='store', metavar='API-KEY', dest='shodankey',type=str, default=None, help='API key to use with Shodan search (MODE="shodan")')
     # censys.io   
     parser.add_argument('-m', '--match', default=None, help='Highlight a string within an existing query result')
     parser.add_argument('-f', '--filter', default=None, help='Filter the JSON keys to display for each result (use value \'help\' for interesting fields)')
@@ -1762,10 +1865,10 @@ def MainFunc():
         parser.print_help()
         sys.exit()
 
-    info['html-title'] = args.html_title
-    info['html-body'] = args.html_body
+    args = parser.parse_args()
+
     info['domain'] = args.domain
-    info['proxies'] = {} 
+    info['proxies'] = {}
 
 #######################################################
 
@@ -1789,8 +1892,7 @@ def MainFunc():
     info['limit'] = args.limit
     info['dnsserver'] = args.dnsserver
     info['ip'] = VerifyHostname(info['domain'])
-    
-    
+
     if args.proxy:
         print "[+] Proxy will ONLY be used during search engines searches"
         info['proxies'] = {
@@ -1875,8 +1977,24 @@ def MainFunc():
 
 #######################################################
 
-## ASK search ##
+## Shodan search ##
 
+    if any(i in ['shodan'] for i in info['mode']):
+
+            # pdb.set_trace()
+
+            if args.shodankey is None:
+                print("[-] API key required for the Shodan search: '-k API-KEY, --shodan-key API-KEY'")
+                sys.exit()
+            print "[+] Shodan search.."
+            print "-------------------"
+
+            results = ShodanSearch(info['domain'], args.shodankey)
+            ShodanReport(results, output_basename)
+
+#######################################################
+
+## ASK search ##
     if any(i in ['ask'] for i in info['mode']):
         print "[+] Searching in ASK.."
         temp1, temp2 = AskSearch(info['domain'], 5, uas, info['proxies'], timeouts) #5 pages
@@ -2033,7 +2151,7 @@ def MainFunc():
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Instagram", temp1, temp2, output_basename)
-		
+
 #######################################################
 
 ## Censys.io search ##
@@ -2144,12 +2262,12 @@ def MainFunc():
                         else:
                             print "[*] Exiting..."
                             exit(0)                                                 
-   
+  
 
 #######################################################
 
 ## Search Results Final Report ##
-    
+
     info['all_emails'] = sorted(set(info['all_emails']))
     info['all_hosts'] = sorted(set(info['all_hosts']))
     info['domains'] = sorted(set(info['domains']))
@@ -2159,14 +2277,23 @@ def MainFunc():
 
 ## Close tags for xml and html ##
 
-    if output_basename != None:
+    if output_basename:
         output = output_basename + ".xml"
         output1 = output_basename + ".html"
 
         with open(output, 'a') as xml, open(output1, 'a') as html:
             xml.write("</report>\n")
             html.write("</body></html>\n")
-            
+
+#######################################################
+
+## Censys.io search ##
+
+    if any(i in ['censys'] for i in info['mode']):
+        print "[+] Searching in Censys.io.."
+        temp1 = CensysSearch(info['domain'], info['censys_api_id'], info['censys_api_secret'])
+        info['domain'].extend(temp1)
+
 #######################################################
 
 if __name__ == '__main__':
