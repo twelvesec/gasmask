@@ -74,6 +74,429 @@ https://www.twelvesec.com/
 
 #######################################################
 
+## Build Short results - Censys.io ##
+
+def print_short(res):
+    max_title_len = 50
+   # public_info = []
+    title_head = 'Title: '
+    cut = '[...]'
+    http_title = res.get('80.http.get.title', 'N/A')
+    cert_name = res.get('443.https.tls.certificate.parsed.subject.common_name', '')
+    cert_alt = res.get('443.https.tls.certificate.parsed.extensions.subject_alt_name.dns_names', '')
+    as_name = res.get('autonomous_system.name', 'N/A')
+    as_num = res.get('autonomous_system.asn', '')
+    loc = '%s / %s' % (res.get('location.country_code', 'N/A'), res.get('location.city', 'N/A'))
+    os = res.get('metadata.os', 'N/A')
+    tags = res.get('tags', '')
+    ip = res.get('ip', 'N/A')
+
+    http_title = http_title.replace('\n', '\\n')
+    http_title = http_title.replace('\r', '\\r')
+
+    # cleanup of list values
+    if isinstance(cert_name, list):
+        if len(cert_name) > 1: cert_name = cert_name[0] + "+"
+        else: cert_name = cert_name[0]
+    if isinstance(cert_alt, list):
+        if len(cert_alt) > 1: cert_alt = cert_alt[0] + "+"
+        else: cert_alt = cert_alt[0]
+    
+    # encoding to UTF-8
+    http_title = unicode(http_title.encode('UTF-8'), errors='ignore')
+    cert_name = unicode(cert_name.encode('UTF-8'), errors='ignore')
+    cert_alt = unicode(cert_alt.encode('UTF-8'), errors='ignore')
+    tags = ', '.join([ unicode(t.encode('UTF-8'), errors='ignore') for t in tags ])
+    as_name = unicode(as_name.encode('UTF-8'), errors='ignore')
+    os = unicode(os.encode('UTF-8'), errors='ignore')
+    loc = unicode(loc.encode('UTF-8'), errors='ignore')
+
+    if cert_alt != '' and cert_alt != cert_name:
+        cert_name = cert_name + ' + ' + cert_alt
+
+    # shorten title if too long
+    if len(http_title) > (max_title_len - len(title_head) - 1):
+        http_title = http_title[:max_title_len - len(title_head) - len(cut) - 1] + cut
+    print ip.ljust(16) + \
+        ((title_head + '%s') % http_title).ljust(max_title_len) + \
+        ('SSL: %s' % cert_name).ljust(50) + \
+        ('AS: %s (%s)' % (as_name,as_num)).ljust(40) + \
+        ('Loc: %s' % loc).ljust(30) + \
+        ('OS: %s' % os).ljust(15) + \
+        ('Tags: %s' % tags)
+    '''    
+    public_info = ip.ljust(16) + \
+        ((title_head + '%s') % http_title).ljust(max_title_len) + \
+        ('SSL: %s' % cert_name).ljust(50) + \
+        ('AS: %s (%s)' % (as_name,as_num)).ljust(40) + \
+        ('Loc: %s' % loc).ljust(30) + \
+        ('OS: %s' % os).ljust(15) + \
+        ('Tags: %s' % tags)
+
+    return public_info
+      '''
+#######################################################
+
+## Censys Public Scan report ##
+
+def CensysPublicReport(engine, public_info, output_basename):
+  
+    if output_basename:
+        output1 = output_basename + ".txt"
+        output2 = output_basename + ".md"
+        output3 = output_basename + ".xml"
+        output4 = output_basename + ".html"
+
+        with open(output1, 'a') as txt, open(output2, 'a') as md, open(output3, 'a') as xml, open(output4, 'a') as html:
+            txt.write("[+] {} results\n".format(engine))
+            txt.write("-------------------------\n")
+            md.write("---\n\n")
+            md.write("## {} results\n".format(engine))
+            xml.write("<{}Results>\n".format(engine))
+            html.write("<h3>{} results</h3>\n".format(engine))
+
+            txt.write("\n")
+            md.write("\n")
+
+            txt.write("Censys Public Scan:\n")
+            md.write("### Censys\n\n")
+            xml.write("<Censys>\n")
+            html.write("<h4>Censys</h4>\n<ul>\n")
+
+            for publicscan in public_info:
+                txt.write("%s\n" % publicscan )
+                #md.write("* {}\n".format(publicscan))
+                #xml.write("<Public_Censys>{}</Public_Censys>\n".format(publicscan))
+                #html.write("<li>{}</li>\n" % publicscan)
+
+            html.write("</ul>\n")
+            xml.write("</Censys>\n")
+            txt.write("\n")
+            md.write("\n") 
+            
+#######################################################
+
+## Censys.io Public Scan - Censys.io ##
+
+def CensysPublicScan(api_id , api_sec, output_basename, args, report_buckets, filter_fields, match, public_info):    
+
+    if (args.mode == 'censys' and ( args.Limit != float('inf') or  args.asn != None or args.report != None or args.html != False or args.http_server != None or args.tags != None or args.cert_org != None or args.cert_host != None or args.count != False or args.html_body != None or  args.html_title != None or args.country != None ) ):
+        q,s = BuildQuery(api_id , api_sec, args)    
+        # count the number of results
+        try:
+            count =  q.report(s, "updated_at")['metadata']['count']
+        except CensysException as e:
+             print e.message
+             sys.exit(-1)   
+                            
+        if args.report:
+             try:
+                r = q.report(s, args.report, report_buckets)
+             except CensysException as e:
+                print e.message
+                sys.exit(-1)
+             sys.stderr.write("Number of results: %d\n" % count)
+             print_report(r, args.report, public_info, output_basename)
+             sys.exit(0)
+                           
+        if args.count:
+             print "Number of results: %d\n" % count
+             sys.exit(0)
+        else:
+             sys.stderr.write("Number of results: %d\n" % count)
+    
+        # prepare temp dir for html files
+        if args.html:
+             htmldir = tempfile.mkdtemp()
+             open(htmldir+"/README", "w").write("html body dumped via command:"+' '.join(sys.argv))
+             print "HTML body dumped to %s" % htmldir
+         
+        public_info2 = []           
+        # search the API 
+        if args.filter: filter_fields = args.filter.split(',')
+        r = q.search(s, fields=filter_fields)
+        i = 0
+        for e in r:
+            if i >= float(args.Limit):
+                break
+            if args.verbose:
+                pprint(q.view(e['ip']))
+            elif args.filter:
+                print e # FIXME: by default dump raw JSON if filters are used
+            else:
+                public_info = print_short(e)
+                public_info2.extend(public_info)
+                if args.html: dump_html_to_file(htmldir, e)
+                if match != 'None': print_match(q.view(e['ip']), match)
+                i += 1
+                
+       # CensysPublicReport('censys', public_info2, output_basename)
+    #else: 
+       # return False
+
+#######################################################
+
+## finding matching results - Censys.io ##
+
+def print_match(res, m):
+    for k in res.keys():
+        json_find(res[k], k, list(), m)
+    print
+
+#######################################################
+
+## Format the result output - Censys.io ##
+
+def print_report(res, key, public_info, output_basename ):
+    r = res['results']
+    print "count".ljust(10) + "\t" + key.split(".")[-1]
+    for e in r:
+        print ("%d" % e['doc_count']).ljust(10) + "\t" + unicode(e['key']).ljust(30)
+        public_info = ("%d" % e['doc_count']).ljust(10) + "\t" + unicode(e['key']).ljust(30)
+        
+    CensysPublicReport('censys', public_info, output_basename)
+
+#######################################################
+
+## Build the Query String - Censys.io ##
+
+def build_query_string(args):
+    if len(args.arguments) == 0:
+        s = '*'
+    else:
+        s = "(" + args.arguments[0] + ")"
+    if args.tags:
+        if ',' in args.tags:
+            tags_l = args.tags.split(',')
+            tags_q = " AND tags:" + " AND tags:".join(tags_l)
+        else:
+            tags_q = " AND tags:%s" % args.tags
+        s += tags_q
+    if args.asn:
+        s += " AND autonomous_system.asn:%s" % args.asn
+    if args.cert_org:
+        s += " AND 443.https.tls.certificate.parsed.subject.organization:%s" % args.cert_org
+    if args.cert_issuer:
+        s += " AND 443.https.tls.certificate.parsed.issuer.organization:%s" % args.cert_issuer
+    if args.cert_host:
+        s += " AND 443.https.tls.certificate.parsed.subject.common_name:%s" % args.cert_host
+    if args.country:
+        s += " AND location.country_code:%s" % args.country
+    if args.http_server:
+        s += " AND 80.http.get.headers.server:%s" % args.http_server
+    if args.html_title:
+        if " " in args.html_title: title = "\"%s\"" % args.html_title
+        else: title = args.html_title
+        s += " AND 80.http.get.title:%s" % title
+    if args.html_body:
+        if " " in args.html_body: body = "\"%s\"" % args.html_body
+        else: body = args.html_body
+        s += " AND 80.http.get.body:%s" % body
+    if args.debug:
+        print 'Query: %s' % s
+    return s
+
+
+#######################################################
+
+## Censys.io ##
+
+# returns true if b is contained inside a
+def is_contained(a, b):
+    if type(a) == type(b):
+        m = re.search(b, a, re.UNICODE+re.IGNORECASE)
+        if m:
+            return True
+        else:
+            return False
+
+#######################################################
+
+## Build The Query - Censys.io ##
+
+
+def BuildQuery(api_id, api_sec,pargs):
+    # build up query
+    q = CensysIPv4(api_id , api_sec)    
+    s = build_query_string(pargs)
+    return q,s
+
+
+#######################################################
+
+## Printing Results - Censys.io ##
+
+def print_res(path, match, val):
+    sep = ' '
+    pre = '[...]'
+    post = pre
+    pos = match.lower().index(val.lower())
+    if len(match) >= 80:
+        if pos <35:
+            pre = ''
+        match_c = Style.DIM + pre + match[pos-35:pos] + Fore.RED+Style.BRIGHT + match[pos:pos+len(val)] + \
+                Style.RESET_ALL+Style.DIM + match[pos+len(val):pos+35] + post + Style.RESET_ALL
+        match = pre + match[pos-35:pos+35] + post
+    else:
+        match_c = Style.DIM + match[:pos] + Fore.RED+Style.BRIGHT + match[pos:pos+len(val)] + \
+                Style.RESET_ALL+Style.DIM + match[pos+len(val):] + Style.RESET_ALL
+
+    match_c = match_c.replace('\n', '\\n')
+    match_c = match_c.replace('\r', '\\r')
+    match = match.replace('\n', '\\n')
+    match = match.replace('\r', '\\r')
+
+    if len(path) >= 60:
+        sep = '\n\t'
+    if sys.stdout.isatty():
+        print "  %s:%s%s" % (path, sep, match_c)
+    else:
+        print "  %s:%s%s" % (path, sep, match)
+
+def append_if_new(l, e):
+    if e not in l:
+        return l+[e]
+    else:
+        return l
+
+#######################################################
+
+## Searching JSON - Censys.io ##
+
+# recursively find values in dict 'obj' that macthes 'val'
+# store the keys to access the matching value in 'path'
+def json_find(obj, k, visited, val):
+    if visited is None:
+        visited = list()
+
+    # case of sub-dict : recursivity
+    if isinstance(obj, dict):
+        visited = append_if_new(visited, k)
+        #visited = visited + [k]
+        for key in obj.keys():
+            visited = json_find(obj[key], key, visited, val)
+
+    # case of list : check all members
+    elif isinstance(obj, list):
+        for e in obj:
+            if is_contained(e, val):
+                print_res('.'.join(visited+[k]), e, val)
+
+    # finally easiest case, leaf
+    elif is_contained(obj, val):
+        print_res('.'.join(visited+[k]), obj, val)
+
+    # remove nodes already visited before returning
+    if k in visited:
+        visited.pop()
+    return visited
+
+#######################################################
+
+## Dump HTML to file - Censys.io ##
+
+def dump_html_to_file(d, rec):
+    html = rec.get('80.http.get.body')
+    if html:
+        filename = "%s/%s.html" % (d, rec['ip'])
+        open(filename, "w").write(html.encode('UTF-8', errors='ignore'))
+
+
+#######################################################
+
+## Check if file exists ##
+
+def checkFile():
+    is_true = os.path.isfile("./api_keys.txt")
+    if ( is_true != True ):
+        return False
+    if os.path.getsize("./api_keys.txt") == 0 : 
+        return False
+    else:
+        return True
+
+#######################################################
+
+## Check if engine exists in API key file ##
+
+def checkUser(engine):   
+    chk = checkFile()
+    if (chk == False):
+        return False
+    else: 
+        with open('./api_keys.txt') as f:
+            s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+            if ( s.find(engine) != -1 ):
+                return True
+            else:
+                return False
+            
+#######################################################
+
+## Domain Searching with Censys.io ##      
+                          
+def DomainSearchCensys(domain_name, api_ip, api_sec, output_basename, domains):
+    if domain_name != None:
+        temp1 = CensysSearch(domain_name, api_ip , api_sec)
+        domains.extend(temp1)
+        SubdomainsReport('Censys', temp1, output_basename)
+    else:
+        return False
+
+#######################################################
+
+## Read API Keys from file  ##
+   
+def readFileContents():
+    with open('./api_keys.txt') as f: 
+        lines = f.read().splitlines()
+        print ("|       Engine       |                API Keys ID              |              API Secret Keys            |")
+        print ("|========================================================================================================|")
+        for line in lines:
+            print "|",line.split(":")[0]," "*(17-len(line.split(":")[0])),"|"  \
+                     ,line.split(":")[1]," "*(38-len(line.split(":")[1])),"|" \
+                     ,line.split(":")[2]," "*(38-len(line.split(":")[2])),"|"
+        
+#######################################################
+
+## Create file and Store the API Keys ##
+
+def createFileAndStoreAPIKeys(engine):
+    f = open("api_keys.txt", "w+")
+    api_id = raw_input("[*] please provide the new %s API ID: "  % engine )
+    api_sec = raw_input("[*] please provide the new %s API Secret: " % engine)
+    f.write(engine + ":" + api_id + ":" + api_sec)
+    f.close()
+    return("stored")
+
+#######################################################
+
+## Update API Keys ##
+
+def updateAPIKeys(engine):
+    ckhstored = checkUser(engine)
+    api_id = raw_input("[*] please provide the new %s API ID: "  % engine )
+    api_sec = raw_input("[*] please provide the new %s API Secret: " % engine)
+    with open("api_keys.txt","r+") as op:
+        lines = op.read().splitlines()
+        if (ckhstored == True):
+            for line in lines: 
+                if (line != line.split(":")[0]):
+                    with open("api_keys.txt", "w+") as f:
+                        f.write(line)
+                    
+            for line in lines: 
+                if (line != line.split(":")[0]):
+                    with open("api_keys.txt", "w+") as f1:
+                        f1.write(engine + ":" + api_id + ":" + api_sec)
+            return 'y'
+        
+        if (ckhstored == False):
+            print "[!] user does not exist in file"
+            return 'n'    
+
+#######################################################
+
 ## Validate Domain name ##
 
 def CheckDomain(value):
@@ -845,6 +1268,8 @@ def SubdomainsReport(engine, subdomains, output_basename):
             xml.write("</Subdomains>\n")
             txt.write("\n")
             md.write("\n")
+            
+        
 
 #######################################################
 
@@ -1376,6 +1801,7 @@ def MainFunc():
     info['all_emails'] = []
     info['all_hosts'] = []
     info['domains'] = []
+    info['public'] = []
     uas = []
 
     user_agent_strings_file = 'common-ua.txt'
@@ -1386,23 +1812,54 @@ def MainFunc():
         'github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal', 'dnsdump', 'shodan', 'censys']
 
     parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
+    parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain',default=None, type=CheckDomain, help="Domain to search.")
+    parser.add_argument("-s", '--server', action="store", metavar='NAMESERVER', dest='dnsserver',default='8.8.8.8', type=CheckDomainOrIP, help="DNS server to use.")
+    parser.add_argument('-x', '--proxy', action="store", metavar='PROXY', dest='proxy',default=None, type=str, help="Use a proxy server when retrieving results from search engines (eg. '-x http://127.0.0.1:8080')")
+    parser.add_argument("-l", '--limit', action="store", metavar='LIMIT', dest='limit',type=int, default=100, help="Limit the number of search engine results (default: 100).")
+    parser.add_argument("-i", '--info', action="store", metavar='MODE', dest='mode',type=str, default='basic', help="Limit information gathering (" + ','.join(modes) + ").")
+    parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',type=str, default=None, help='Output in the four major formats at once (markdown, txt, xml and html).')
+    parser.add_argument('-k', '--shodan-key', action='store', metavar='API-KEY', dest='shodankey',type=str, default=None, help='API key to use with Shodan search (MODE="shodan")')
+    # censys.io   
+    parser.add_argument('-m', '--match', default=None, help='Highlight a string within an existing query result')
+    parser.add_argument('-f', '--filter', default=None, help='Filter the JSON keys to display for each result (use value \'help\' for interesting fields)')
+    parser.add_argument('--count', action='store_true', help='Print the count result and exit')
+    parser.add_argument('-R', '--report', default=None, help='Stats on given field (use value \'help\' for listing interesting fields)')
+    parser.add_argument('-B', '--report_bucket', default=report_buckets, help='Bucket len in report mode (default: %s)' % report_buckets)
+    # query filter shortcuts - censys.io
+    parser.add_argument('-1', '--censys_api_id', action='store', metavar='CENSYS_API_ID', dest='censys_api_id',type=str, default=None, help='Provide the authentication ID for the censys.io search engine')
+    parser.add_argument('-2', '--censys_api_secret', action='store', metavar='CENSYS_API_SECRET', dest='censys_api_secret',type=str, default=None, help='Provide the secret hash for the censys.io search engine')
+    parser.add_argument('-r', '--read_api_keys', action='store_true', help="Read the API Keys stored in api_keys.txt file. (e.g. '-i censys -r')")
+    parser.add_argument('-u', '--update_api_keys', action='store_true',  help="Update the API Keys stored in api_keys.txt file. (e.g. '-i censys -u')")
+    parser.add_argument('-a', '--asn', metavar='ASN', dest='asn',type=str, default=None, help='Filter with ASN (e.g 5408 for GR-NET AS)')
+    parser.add_argument('-c', '--country', metavar='COUNTRY', dest='country',type=str, default=None, help='Filter with country')
+    parser.add_argument('-O', '--cert-org', metavar='CERT_ORG', dest='cert_org',type=str, default=None, help='Certificate issued to organization')
+    parser.add_argument('-I', '--cert-issuer', metavar='CERT_ISSUER', dest='cert_issuer',type=str, default=None, help='Certificate issued by organization')
+    parser.add_argument('-z', '--cert-host', metavar='CERT_HOST', dest='cert_host',type=str, default=None, help='hostname Certificate is issued to')
+    parser.add_argument('-S', '--http-server', metavar='HTTP_SERVER', dest='http_server',type=str, default=None, help='Server header')
+    parser.add_argument('-t', '--html-title', metavar='HTML_TITLE', dest='html_title',type=str, default=None, help='Filter on html page title')
+    parser.add_argument('-b', '--html-body', metavar='HTML_BODY', dest='html_body',type=str, default=None, help='Filter on html body content')
+    parser.add_argument('-T', '--tags', default=None, help='Filter on specific tags. e.g: -T tag1,tag2,... (use keyword \'list\' to list usual tags')
+    parser.add_argument('-L', '--Limit', default=float('inf'), help='Limit to N results')    
+    parser.add_argument('-D', '--debug', action='store_true', help='Debug informations')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Print raw JSON records')
+    parser.add_argument('-H', '--html', action='store_true', help='Renders html elements in a browser')
+    parser.add_argument('arguments', metavar='arguments', nargs='*', help='Censys query')
+    args = parser.parse_args()
+    match = unicode(args.match)
+     
+    # fire help before doing any request
+    if args.tags in ['list', 'help']:
+        pprint(tags_available)
+        sys.exit(0)
+    if args.report in ['list', 'help']:
+        pprint(report_fields)
+        sys.exit(0)
+    if args.filter in ['list', 'help']:
+        pprint(filter_fields)
+        sys.exit(0)
 
-    parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain',
-        default=None, type=CheckDomain, help="Domain to search.", required=True)
-    parser.add_argument("-s", '--server', action="store", metavar='NAMESERVER', dest='dnsserver',
-        default='8.8.8.8', type=CheckDomainOrIP, help="DNS server to use.")
-    parser.add_argument('-x', '--proxy', action="store", metavar='PROXY', dest='proxy',
-        default=None, type=str, help="Use a proxy server when retrieving results from search engines (eg. '-x http://127.0.0.1:8080')")
-    parser.add_argument("-l", '--limit', action="store", metavar='LIMIT', dest='limit',
-        type=int, default=100, help="Limit the number of search engine results (default: 100).")
-    parser.add_argument("-i", '--info', action="store", metavar='MODE', dest='mode',
-        type=str, default='basic', help="Limit information gathering (" + ','.join(modes) + ").")
-    parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',
-        type=str, default=None, help='Output in the four major formats at once (markdown, txt, xml and html).')
-    parser.add_argument('-k', '--shodan-key', action='store', metavar='API-KEY', dest='shodankey',
-        type=str, default=None, help='API key to use with Shodan search (MODE="shodan")')
-    parser.add_argument('--censys-api-id',action='store', dest='censys_api_id',type=str, default=None, help='Provide the authentication ID for the censys.io search engine')
-    parser.add_argument('--censys-api-secret',action='store', dest='censys_api_secret',type=str, default=None, help='Provide the secret hash for the censys.io search engine')
+    if args.report_bucket:
+        report_buckets = args.report_bucket
 
     if len(sys.argv) is 1:
         parser.print_help()
@@ -1699,11 +2156,113 @@ def MainFunc():
 
 ## Censys.io search ##
 
-    if any(i in ['censys'] for i in info['mode']):
-        print "[+] Searching in Censys.io.."
-        temp1 = CensysSearch(info['domain'], args.censys_api_id , args.censys_api_secret)
-        info['domains'].extend(temp1)
-        SubdomainsReport('Censys', temp1, output_basename)
+    if any(i in ['censys'] for i in info['mode']):        
+        if (args.censys_api_id != None and args.censys_api_secret != None):
+            print "[+] Searching in Censys.io.."
+            print
+            res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
+            res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match, info['public'])
+            if (res1 == False and res2 == False): 
+                print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
+            print
+        else:         
+                chkstored = checkFile()
+                flag=0
+                if ( chkstored == False ):
+                    chkanswer = raw_input("[!] API Keys not provided. Would you like to store your API keys ? [y/n]: ")
+                    if (chkanswer == 'y'):
+                        stored = createFileAndStoreAPIKeys('censys')
+                        if (stored == "stored"):
+                            print
+                            readFileContents()
+                            print
+                            answer1 = raw_input("[*] would you like to continue searching with censys.io ? [y/n] ")
+                            print
+                            if (answer1 == 'n' ):
+                                flag=1
+                                print "[*] Exiting..."
+                                exit(0)
+                            if (answer1 == 'y'):
+                                with open('./api_keys.txt') as f: 
+                                    lines = f.read().splitlines()
+                                    print "[+] Searching in Censys.io.."
+                                    print    
+                                    for line in lines:                              
+                                        res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
+                                        res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match, info['public'])
+                                        if (res1 == False and res2 == False): 
+                                            print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
+                                        print
+                                        flag=1
+                        else:
+                            print "[x] API keys has not been stored.."
+                            print "[*] Exiting..."
+                            exit(0)
+                    if (chkanswer == 'n'):
+                        print "[!] Please provide the API keys in the command line to continue searching"
+                        print "[*] Exiting...."
+                        exit(0)                
+                        
+                if ( chkstored == True ):
+                    if ((args.update_api_keys == True or args.update_api_keys == True) and (args.mode == 'censys') and flag != 1):
+                        keysupdate = updateAPIKeys('censys')
+                        if (keysupdate == 'n'):
+                            print "[x] the keys have not been updated"
+                            print "[*] Exiting..."
+                            exit(0)
+                            print
+                        else:
+                            print "[!] the keys have been successfully updated!"
+                            answer1 = raw_input("[*] would you like to continue searching with censys.io ? [y/n] ")
+                            print
+                            if (answer1 == 'y'):
+                                with open('./api_keys.txt') as f: 
+                                    lines = f.read().splitlines()   
+                                    print "[+] Searching in Censys.io.." 
+                                    print
+                                    for line in lines:                                
+                                       res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
+                                       res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match, info['public'])
+                                       if (res1 == False and res2 == False): 
+                                            print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
+                                       print
+                            else:
+                                print "[*] Exiting..."
+                                exit(0)
+                    else: 
+                        if ((args.read_api_keys != True or args.read_api_keys != True )):
+                            with open('./api_keys.txt') as f: 
+                                    lines = f.read().splitlines()    
+                                    print "[+] Searching in Censys.io.."
+                                    print
+                                    for line in lines:                                        
+                                        res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
+                                        res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match, info['public'])
+                                        if (res1 == False and res2 == False): 
+                                            print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
+                                        print
+                                                
+                    if ((args.read_api_keys == True or args.read_api_keys == True ) and (args.mode == 'censys') and flag != 1):
+                        print
+                        readFileContents()
+                        print
+                        answer1 = raw_input("[*] would you like to continue searching with censys.io ? [y/n] ")
+                        print
+                        if (answer1 == 'y'):
+                             with open('./api_keys.txt') as f: 
+                                        lines = f.read().splitlines()  
+                                        print "[+] Searching in Censys.io.."  
+                                        print
+                                        for line in lines:                         
+                                            res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
+                                            res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match, info['public'])
+                                            if (res1 == False and res2 == False): 
+                                                print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
+                                            print
+                        else:
+                            print "[*] Exiting..."
+                            exit(0)                                                 
+  
 
 #######################################################
 
