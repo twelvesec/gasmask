@@ -168,7 +168,6 @@ optional arguments:
   * Bing Virtual Hosts
   * Search in Bing
   * Search in Yahoo
-  * Search in Shodan
   * Search in ASK
   * Search in Dogpile
   * Search in Yandex
