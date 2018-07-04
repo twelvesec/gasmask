@@ -30,7 +30,7 @@
 __author__ = "maldevel"
 __credits__ = ["maldevel", "mikismaos", "xvass"]
 __license__ = "GPLv3"
-__version__ = "1.3"
+__version__ = "1.3.1"
 
 #######################################################
 
@@ -124,17 +124,7 @@ def print_short(res):
         ('Loc: %s' % loc).ljust(30) + \
         ('OS: %s' % os).ljust(15) + \
         ('Tags: %s' % tags)
-    '''    
-    public_info = ip.ljust(16) + \
-        ((title_head + '%s') % http_title).ljust(max_title_len) + \
-        ('SSL: %s' % cert_name).ljust(50) + \
-        ('AS: %s (%s)' % (as_name,as_num)).ljust(40) + \
-        ('Loc: %s' % loc).ljust(30) + \
-        ('OS: %s' % os).ljust(15) + \
-        ('Tags: %s' % tags)
 
-    return public_info
-      '''
 #######################################################
 
 ## Censys Public Scan report ##
@@ -229,10 +219,6 @@ def CensysPublicScan(api_id , api_sec, output_basename, args, report_buckets, fi
                 if args.html: dump_html_to_file(htmldir, e)
                 if match != 'None': print_match(q.view(e['ip']), match)
                 i += 1
-                
-       # CensysPublicReport('censys', public_info2, output_basename)
-    #else: 
-       # return False
 
 #######################################################
 
