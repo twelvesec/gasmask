@@ -1013,7 +1013,7 @@ def VTSearch(value, uas, proxies):
 
 ## site: + Google search ##
 
-def GoogleSearch(value, site, limit, uas, proxies, timeouts):
+def GoogleSearchEngine(value, site, limit, uas, proxies, timeouts):
 
     server = "www.google.com"
     quantity = 100
@@ -2068,7 +2068,7 @@ def MainFunc():
 
     if any(i in ['linkedin'] for i in info['mode']):
         print "[+] Searching in LinkedIn.."
-        temp1, temp2 = GoogleSearch(info['domain'], 'linkedin.com', info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearchEngine(info['domain'], 'linkedin.com', info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("LinkedIn", temp1, temp2, output_basename)
@@ -2079,7 +2079,7 @@ def MainFunc():
 
     if any(i in ['twitter'] for i in info['mode']):
         print "[+] Searching in Twitter.."
-        temp1, temp2 = GoogleSearch(info['domain'], "twitter.com", info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearchEngine(info['domain'], "twitter.com", info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Twitter", temp1, temp2, output_basename)
@@ -2090,7 +2090,7 @@ def MainFunc():
 
     if any(i in ['googleplus'] for i in info['mode']):
         print "[+] Searching in Google+.."
-        temp1, temp2 = GoogleSearch(info['domain'], "plus.google.com", info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearchEngine(info['domain'], "plus.google.com", info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Google+", temp1, temp2, output_basename)
@@ -2101,7 +2101,7 @@ def MainFunc():
 
     if any(i in ['youtube'] for i in info['mode']):
         print "[+] Searching in Youtube.."
-        temp1, temp2 = GoogleSearch(info['domain'], "youtube.com", info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearchEngine(info['domain'], "youtube.com", info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Youtube", temp1, temp2, output_basename)
@@ -2112,7 +2112,7 @@ def MainFunc():
 
     if any(i in ['reddit'] for i in info['mode']):
         print "[+] Searching in Reddit.."
-        temp1, temp2 = GoogleSearch(info['domain'], "reddit.com", info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearchEngine(info['domain'], "reddit.com", info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Reddit", temp1, temp2, output_basename)
@@ -2123,7 +2123,7 @@ def MainFunc():
 
     if any(i in ['github'] for i in info['mode']):
         print "[+] Searching in Github.."
-        temp1, temp2 = GoogleSearch(info['domain'], "github.com", info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearchEngine(info['domain'], "github.com", info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Github", temp1, temp2, output_basename)
@@ -2134,7 +2134,7 @@ def MainFunc():
 
     if any(i in ['instagram'] for i in info['mode']):
         print "[+] Searching in Instagram.."
-        temp1, temp2 = GoogleSearch(info['domain'], "instagram.com", info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearchEngine(info['domain'], "instagram.com", info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Instagram", temp1, temp2, output_basename)
