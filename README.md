@@ -153,6 +153,32 @@ optional arguments:
 
 ---
 
+### Modes
+
+* Basic Mode
+  * Whois lookup
+  * DNS queries
+  * Reverse DNS Lookup
+  * Bing Virtual Hosts
+
+* Nongoogle Mode
+  * Whois lookup
+  * DNS queries
+  * Reverse DNS Lookup
+  * Bing Virtual Hosts
+  * Search in Bing
+  * Search in Yahoo
+  * Search in Shodan
+  * Search in ASK
+  * Search in Dogpile
+  * Search in Yandex
+  * Search in Crt
+  * Search in DNSdumpster
+  * Search in Netcraft
+  * Search in VirusTotal
+
+---
+
 ### Usage Examples
 
 ```
@@ -165,13 +191,11 @@ python gasmask.py -d example.com -i shodan -k xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 python gasmask.py -d example.com -i whois,dns,revdns
 
 python gasmask.py -d example.com -i basic,yahoo,github -o myresults/example_com_search_results
-
 ```
 
-### censys.io usage examples 
+### censys.io usage examples
 
 ```
-
 python gasmask.py -i censys --Limit 10 nessus
 
 python gasmask.py -i censys -I SAP --report location.country.raw --report_bucket 10
@@ -185,21 +209,19 @@ python gasmask.py -i censys -S NGINX --count
 python gasmask.py -i censys -d example.com
 
 python gasmask.py -i censys -t "Internal Server Error" -S Apache -m "HTTP 500" --Limit 15
+```
 
+### Read the API Keys usage example - e.g in censys.io
+
+```
+python gasmask.py -i censys -r
 
 ```
 
-### Read the API Keys usage example - e.g in censys.io  
+### Update the API Keys usage example - e.g in censys.io
 
 ```
-python gasmask.py -i censys -r 
-
-```
-
-### Update the API Keys usage example - e.g in censys.io  
-
-```
-python gasmask.py -i censys -u 
+python gasmask.py -i censys -u
 
 ```
 

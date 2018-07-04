@@ -30,7 +30,7 @@
 __author__ = "maldevel"
 __credits__ = ["maldevel", "mikismaos", "xvass"]
 __license__ = "GPLv3"
-__version__ = "1.3.1"
+__version__ = "1.4"
 
 #######################################################
 
@@ -1013,7 +1013,7 @@ def VTSearch(value, uas, proxies):
 
 ## site: + Google search ##
 
-def SiteSearch(value, site, limit, uas, proxies, timeouts):
+def GoogleSearch(value, site, limit, uas, proxies, timeouts):
 
     server = "www.google.com"
     quantity = 100
@@ -1254,8 +1254,6 @@ def SubdomainsReport(engine, subdomains, output_basename):
             xml.write("</Subdomains>\n")
             txt.write("\n")
             md.write("\n")
-            
-        
 
 #######################################################
 
@@ -1783,6 +1781,7 @@ def MainFunc():
 
     print message
 
+    report_buckets = 50
     info = {}
     info['all_emails'] = []
     info['all_hosts'] = []
@@ -1793,7 +1792,7 @@ def MainFunc():
     user_agent_strings_file = 'common-ua.txt'
     timeouts = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
-    modes = ['basic','whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo',
+    modes = ['basic', 'nongoogle','whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo',
         'ask', 'dogpile', 'yandex', 'linkedin', 'twitter', 'googleplus', 'youtube', 'reddit',
         'github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal', 'dnsdump', 'shodan', 'censys']
 
@@ -1805,7 +1804,7 @@ def MainFunc():
     parser.add_argument("-i", '--info', action="store", metavar='MODE', dest='mode',type=str, default='basic', help="Limit information gathering (" + ','.join(modes) + ").")
     parser.add_argument('-o', '--output', action='store', metavar='BASENAME', dest='basename',type=str, default=None, help='Output in the four major formats at once (markdown, txt, xml and html).')
     parser.add_argument('-k', '--shodan-key', action='store', metavar='API-KEY', dest='shodankey',type=str, default=None, help='API key to use with Shodan search (MODE="shodan")')
-    # censys.io   
+    # censys.io
     parser.add_argument('-m', '--match', default=None, help='Highlight a string within an existing query result')
     parser.add_argument('-f', '--filter', default=None, help='Filter the JSON keys to display for each result (use value \'help\' for interesting fields)')
     parser.add_argument('--count', action='store_true', help='Print the count result and exit')
@@ -1825,14 +1824,16 @@ def MainFunc():
     parser.add_argument('-t', '--html-title', metavar='HTML_TITLE', dest='html_title',type=str, default=None, help='Filter on html page title')
     parser.add_argument('-b', '--html-body', metavar='HTML_BODY', dest='html_body',type=str, default=None, help='Filter on html body content')
     parser.add_argument('-T', '--tags', default=None, help='Filter on specific tags. e.g: -T tag1,tag2,... (use keyword \'list\' to list usual tags')
-    parser.add_argument('-L', '--Limit', default=float('inf'), help='Limit to N results')    
-    parser.add_argument('-D', '--debug', action='store_true', help='Debug informations')
+    parser.add_argument('-L', '--Limit', default=float('inf'), help='Limit to N results')
+    parser.add_argument('-D', '--debug', action='store_true', help='Debug information')
     parser.add_argument('-v', '--verbose', action='store_true', help='Print raw JSON records')
     parser.add_argument('-H', '--html', action='store_true', help='Renders html elements in a browser')
     parser.add_argument('arguments', metavar='arguments', nargs='*', help='Censys query')
+
     args = parser.parse_args()
+    
     match = unicode(args.match)
-     
+
     # fire help before doing any request
     if args.tags in ['list', 'help']:
         pprint(tags_available)
@@ -1851,7 +1852,7 @@ def MainFunc():
         parser.print_help()
         sys.exit()
 
-    args = parser.parse_args()
+    #args = parser.parse_args()
 
     info['domain'] = args.domain
     info['proxies'] = {}
@@ -1892,7 +1893,7 @@ def MainFunc():
 
 ## Whois query report ##
 
-    if any(i in ['whois', 'basic'] for i in info['mode']):
+    if any(i in ['whois', 'basic', 'nongoogle'] for i in info['mode']):
         print "[+] Whois lookup"
         print "----------------"
         info['whois'] = WhoisQuery(info['domain'])
@@ -1902,7 +1903,7 @@ def MainFunc():
 
 ## DNS records report ##
 
-    if any(i in ['dns', 'basic'] for i in info['mode']):
+    if any(i in ['dns', 'basic', 'nongoogle'] for i in info['mode']):
         print "[+] DNS queries"
         print "---------------"
         info['dns'] = DnsQuery(info['domain'], info['dnsserver'])
@@ -1912,7 +1913,7 @@ def MainFunc():
 
 ## IP Reverse DNS lookup report ##
 
-    if any(i in ['revdns', 'basic'] for i in info['mode']):
+    if any(i in ['revdns', 'basic', 'nongoogle'] for i in info['mode']):
         print "[+] Reverse DNS Lookup"
         print "----------------------"
         info['revdns'] = ReverseIPQuery(info['ip'], info['dnsserver'])
@@ -1922,7 +1923,7 @@ def MainFunc():
 
 # Bing Virtual Hosts search results report ##
 
-    if any(i in ['vhosts', 'basic'] for i in info['mode']):
+    if any(i in ['vhosts', 'basic', 'nongoogle'] for i in info['mode']):
         print "[+] Bing Virtual Hosts"
         print "----------------------"
         info['bingvhosts'] = BingVHostsSearch(info['ip'], info['limit'], uas, info['proxies'], timeouts)
@@ -1943,7 +1944,7 @@ def MainFunc():
 
 ## Bing search ##
 
-    if any(i in ['bing'] for i in info['mode']):
+    if any(i in ['bing', 'nongoogle'] for i in info['mode']):
         print "[+] Searching in Bing.."
         temp1, temp2 = BingSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
@@ -1954,7 +1955,7 @@ def MainFunc():
 
 ## Yahoo search ##
 
-    if any(i in ['yahoo'] for i in info['mode']):
+    if any(i in ['yahoo', 'nongoogle'] for i in info['mode']):
         print "[+] Searching in Yahoo.."
         temp1, temp2 = YahooSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
@@ -1972,7 +1973,7 @@ def MainFunc():
             if args.shodankey is None:
                 print("[-] API key required for the Shodan search: '-k API-KEY, --shodan-key API-KEY'")
                 sys.exit()
-            print "[+] Shodan search.."
+            print "[+] Searching in Shodan.."
             print "-------------------"
 
             results = ShodanSearch(info['domain'], args.shodankey)
@@ -1981,7 +1982,7 @@ def MainFunc():
 #######################################################
 
 ## ASK search ##
-    if any(i in ['ask'] for i in info['mode']):
+    if any(i in ['ask', 'nongoogle'] for i in info['mode']):
         print "[+] Searching in ASK.."
         temp1, temp2 = AskSearch(info['domain'], 5, uas, info['proxies'], timeouts) #5 pages
         info['all_emails'].extend(temp1)
@@ -1992,7 +1993,7 @@ def MainFunc():
 
 ## Dogpile search ##
 
-    if any(i in ['dogpile'] for i in info['mode']):
+    if any(i in ['dogpile', 'nongoogle'] for i in info['mode']):
         print "[+] Searching in Dogpile.."
         temp1, temp2 = DogpileSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
@@ -2003,7 +2004,7 @@ def MainFunc():
 
 ## Yandex search ##
 
-    if any(i in ['yandex'] for i in info['mode']):
+    if any(i in ['yandex', 'nongoogle'] for i in info['mode']):
         print "[+] Searching in Yandex.."
         temp1, temp2 = YandexSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
@@ -2014,7 +2015,7 @@ def MainFunc():
 
 ## crt search ##
 
-    if any(i in ['crt'] for i in info['mode']):
+    if any(i in ['crt', 'nongoogle'] for i in info['mode']):
         print "[+] Searching in Crt.."
         temp = CrtSearch(info['domain'], uas, info['proxies'])
         info['all_hosts'].extend(temp)
@@ -2024,7 +2025,7 @@ def MainFunc():
 
 ## dnsdumpster search ##
 
-    if any(i in ['dnsdump'] for i in info['mode']):
+    if any(i in ['dnsdump', 'nongoogle'] for i in info['mode']):
         print "[+] Searching in DNSdumpster.."
         temp = DNSDumpsterSearch(info['domain'], uas, info['proxies'])
         info['all_hosts'].extend(temp)
@@ -2034,7 +2035,7 @@ def MainFunc():
 
 ## PGP search ##
 
-    if any(i in ['pgp'] for i in info['mode']):
+    if any(i in ['pgp', 'nongoogle'] for i in info['mode']):
         print "[+] Searching in PGP.."
         temp1, temp2 = PGPSearch(info['domain'], uas, info['proxies'])
         info['all_emails'].extend(temp1)
@@ -2045,7 +2046,7 @@ def MainFunc():
 
 ## netcraft search ##
 
-    if any(i in ['netcraft'] for i in info['mode']):
+    if any(i in ['netcraft', 'nongoogle'] for i in info['mode']):
         print "[+] Searching in Netcraft.."
         temp = NetcraftSearch(info['domain'], uas, info['proxies'])
         info['all_hosts'].extend(temp)
@@ -2055,7 +2056,7 @@ def MainFunc():
 
 ## virustotal search ##
 
-    if any(i in ['virustotal'] for i in info['mode']):
+    if any(i in ['virustotal', 'nongoogle'] for i in info['mode']):
         print "[+] Searching in VirusTotal.."
         temp = VTSearch(info['domain'], uas, info['proxies'])
         info['all_hosts'].extend(temp)
@@ -2067,7 +2068,7 @@ def MainFunc():
 
     if any(i in ['linkedin'] for i in info['mode']):
         print "[+] Searching in LinkedIn.."
-        temp1, temp2 = SiteSearch(info['domain'], 'linkedin.com', info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearch(info['domain'], 'linkedin.com', info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("LinkedIn", temp1, temp2, output_basename)
@@ -2078,7 +2079,7 @@ def MainFunc():
 
     if any(i in ['twitter'] for i in info['mode']):
         print "[+] Searching in Twitter.."
-        temp1, temp2 = SiteSearch(info['domain'], "twitter.com", info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearch(info['domain'], "twitter.com", info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Twitter", temp1, temp2, output_basename)
@@ -2089,7 +2090,7 @@ def MainFunc():
 
     if any(i in ['googleplus'] for i in info['mode']):
         print "[+] Searching in Google+.."
-        temp1, temp2 = SiteSearch(info['domain'], "plus.google.com", info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearch(info['domain'], "plus.google.com", info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Google+", temp1, temp2, output_basename)
@@ -2100,7 +2101,7 @@ def MainFunc():
 
     if any(i in ['youtube'] for i in info['mode']):
         print "[+] Searching in Youtube.."
-        temp1, temp2 = SiteSearch(info['domain'], "youtube.com", info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearch(info['domain'], "youtube.com", info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Youtube", temp1, temp2, output_basename)
@@ -2111,7 +2112,7 @@ def MainFunc():
 
     if any(i in ['reddit'] for i in info['mode']):
         print "[+] Searching in Reddit.."
-        temp1, temp2 = SiteSearch(info['domain'], "reddit.com", info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearch(info['domain'], "reddit.com", info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Reddit", temp1, temp2, output_basename)
@@ -2122,7 +2123,7 @@ def MainFunc():
 
     if any(i in ['github'] for i in info['mode']):
         print "[+] Searching in Github.."
-        temp1, temp2 = SiteSearch(info['domain'], "github.com", info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearch(info['domain'], "github.com", info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Github", temp1, temp2, output_basename)
@@ -2133,7 +2134,7 @@ def MainFunc():
 
     if any(i in ['instagram'] for i in info['mode']):
         print "[+] Searching in Instagram.."
-        temp1, temp2 = SiteSearch(info['domain'], "instagram.com", info['limit'], uas, info['proxies'], timeouts)
+        temp1, temp2 = GoogleSearch(info['domain'], "instagram.com", info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Instagram", temp1, temp2, output_basename)
@@ -2142,7 +2143,7 @@ def MainFunc():
 
 ## Censys.io search ##
 
-    if any(i in ['censys'] for i in info['mode']):        
+    if any(i in ['censys'] for i in info['mode']):
         if (args.censys_api_id != None and args.censys_api_secret != None):
             print "[+] Searching in Censys.io.."
             print
@@ -2151,7 +2152,7 @@ def MainFunc():
             if (res1 == False and res2 == False): 
                 print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
             print
-        else:         
+        else:
                 chkstored = checkFile()
                 flag=0
                 if ( chkstored == False ):
@@ -2227,7 +2228,7 @@ def MainFunc():
                                         if (res1 == False and res2 == False): 
                                             print "Please use the available ceneys.io options in order to perform scanning. For more information use the '--help' option"
                                         print
-                                                
+
                     if ((args.read_api_keys == True or args.read_api_keys == True ) and (args.mode == 'censys') and flag != 1):
                         print
                         readFileContents()
@@ -2235,11 +2236,11 @@ def MainFunc():
                         answer1 = raw_input("[*] would you like to continue searching with censys.io ? [y/n] ")
                         print
                         if (answer1 == 'y'):
-                             with open('./api_keys.txt') as f: 
-                                        lines = f.read().splitlines()  
-                                        print "[+] Searching in Censys.io.."  
+                             with open('./api_keys.txt') as f:
+                                        lines = f.read().splitlines()
+                                        print "[+] Searching in Censys.io.."
                                         print
-                                        for line in lines:                         
+                                        for line in lines:
                                             res1 = DomainSearchCensys(info['domain'], line.split(":")[1] , line.split(":")[2],  output_basename, info['domains'])
                                             res2 = CensysPublicScan(line.split(":")[1] , line.split(":")[2], output_basename, args, report_buckets, filter_fields, match, info['public'])
                                             if (res1 == False and res2 == False): 
@@ -2247,8 +2248,7 @@ def MainFunc():
                                             print
                         else:
                             print "[*] Exiting..."
-                            exit(0)                                                 
-  
+                            exit(0)
 
 #######################################################
 
