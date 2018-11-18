@@ -60,16 +60,18 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning) #remove insec
 #######################################################
 
 message = """
-   ______           __  ___           __ __
-  / ____/___ ______/  |/  /___ ______/ //_/
- / / __/ __ `/ ___/ /|_/ / __ `/ ___/ ,<
-/ /_/ / /_/ (__  ) /  / / /_/ (__  ) /| |
-\____/\__,_/____/_/  /_/\__,_/____/_/ |_|
+___________              .__                _________              
+\__    ___/_  _  __ ____ |  |___  __ ____  /   _____/ ____   ____  
+  |    |  \ \/ \/ // __ \|  |\  \/ // __ \ \_____  \_/ __ \_/ ___\ 
+  |    |   \     /\  ___/|  |_\   /\  ___/ /        \  ___/\  \___ 
+  |____|    \/\_/  \___  >____/\_/  \___  >_______  /\___  >\___  >
+                       \/               \/        \/     \/     \/ 
 
-GasMasK - All in one Information gathering tool - OSINT
-Ver. {}
+GasMasK v. {} - All in one Information gathering tool - OSINT
+GasMasK is an open source tool licensed under GPLv3.
 Written by: @maldevel
 https://www.twelvesec.com/
+Please visit https://github.com/twelvesec/gasmask for more..
 """.format(__version__)
 
 #######################################################
