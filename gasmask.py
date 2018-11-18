@@ -69,7 +69,7 @@ ___________              .__                _________
 
 GasMasK v. {} - All in one Information gathering tool - OSINT
 GasMasK is an open source tool licensed under GPLv3.
-Written by: @maldevel
+Written by: @maldevel, mikismaos, xvass
 https://www.twelvesec.com/
 Please visit https://github.com/twelvesec/gasmask for more..
 """.format(__version__)
