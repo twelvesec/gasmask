@@ -102,3 +102,5 @@ ENV/
 
 # Misc
 results
+
+sonar-project.properties
