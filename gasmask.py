@@ -1795,7 +1795,7 @@ def MainFunc():
     timeouts = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
     report_buckets = 10
     modes = ['basic', 'nongoogle','whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo',
-        'ask', 'dogpile', 'yandex', 'linkedin', 'twitter', 'googleplus', 'youtube', 'reddit',
+        'ask', 'dogpile', 'yandex', 'linkedin', 'twitter', 'youtube', 'reddit',
         'github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal', 'dnsdump', 'shodan', 'censys']
 
     parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
@@ -2085,17 +2085,6 @@ def MainFunc():
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
         Report("Twitter", temp1, temp2, output_basename)
-
-#######################################################
-
-## Google+ search ##
-
-    if any(i in ['googleplus'] for i in info['mode']):
-        print ("[+] Searching in Google+..")
-        temp1, temp2 = GoogleSearchEngine(info['domain'], "plus.google.com", info['limit'], uas, info['proxies'], timeouts)
-        info['all_emails'].extend(temp1)
-        info['all_hosts'].extend(temp2)
-        Report("Google+", temp1, temp2, output_basename)
 
 #######################################################
 
