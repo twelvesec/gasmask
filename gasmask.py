@@ -119,13 +119,13 @@ def print_short(res):
     # shorten title if too long
     if len(http_title) > (max_title_len - len(title_head) - 1):
         http_title = http_title[:max_title_len - len(title_head) - len(cut) - 1] + cut
-    print((ip.ljust(16) + \
+    print(ip.ljust(16) + \
         ((title_head + '%s') % http_title).ljust(max_title_len) + \
         ('SSL: %s' % cert_name).ljust(50) + \
         ('AS: %s (%s)' % (as_name,as_num)).ljust(40) + \
         ('Loc: %s' % loc).ljust(30) + \
         ('OS: %s' % os).ljust(15) + \
-        ('Tags: %s' % tags)))
+        ('Tags: %s' % tags))
 
 #######################################################
 
@@ -178,21 +178,21 @@ def CensysPublicScan(api_id , api_sec, output_basename, args, report_buckets, fi
         try:
             count =  q.report(s, "updated_at")['metadata']['count']
         except CensysException as e:
-             print((e.message))
+             print(e.message)
              sys.exit(-1)
 
         if args.report:
              try:
                 r = q.report(s, args.report, report_buckets)
              except CensysException as e:
-                print((e.message))
+                print(e.message)
                 sys.exit(-1)
              sys.stderr.write("Number of results: %d\n" % count)
              print_report(r, args.report, public_info, output_basename)
              sys.exit(0)
 
         if args.count:
-             print(("Number of results: %d\n" % count))
+             print("Number of results: %d\n" % count)
              sys.exit(0)
         else:
              sys.stderr.write("Number of results: %d\n" % count)
@@ -201,7 +201,7 @@ def CensysPublicScan(api_id , api_sec, output_basename, args, report_buckets, fi
         if args.html:
              htmldir = tempfile.mkdtemp()
              open(htmldir+"/README", "w").write("html body dumped via command:"+' '.join(sys.argv))
-             print(("HTML body dumped to %s" % htmldir))
+             print("HTML body dumped to %s" % htmldir)
 
         public_info2 = []
         # search the API 
@@ -237,7 +237,7 @@ def print_match(res, m):
 
 def print_report(res, key, public_info, output_basename ):
     r = res['results']
-    print(("count".ljust(10) + "\t" + key.split(".")[-1]))
+    print("count".ljust(10) + "\t" + key.split(".")[-1])
     for e in r:
         print(("%d" % e['doc_count']).ljust(10) + "\t" + str(e['key']).ljust(30))
         public_info = ("%d" % e['doc_count']).ljust(10) + "\t" + str(e['key']).ljust(30)
@@ -281,7 +281,7 @@ def build_query_string(args):
         else: body = args.html_body
         s += " AND 80.http.get.body:%s" % body
     if args.debug:
-        print(('Query: %s' % s))
+        print('Query: %s' % s)
     return s
 
 
@@ -337,9 +337,9 @@ def print_res(path, match, val):
     if len(path) >= 60:
         sep = '\n\t'
     if sys.stdout.isatty():
-        print(("  %s:%s%s" % (path, sep, match_c)))
+        print("  %s:%s%s" % (path, sep, match_c))
     else:
-        print(("  %s:%s%s" % (path, sep, match)))
+        print("  %s:%s%s" % (path, sep, match))
 
 def append_if_new(l, e):
     if e not in l:
@@ -441,9 +441,9 @@ def readFileContents():
         print ("|       Engine       |                API Keys ID              |              API Secret Keys            |")
         print ("|========================================================================================================|")
         for line in lines:
-            print(("|",line.split(":")[0]," "*(17-len(line.split(":")[0])),"|"  \
+            print("|",line.split(":")[0]," "*(17-len(line.split(":")[0])),"|"  \
                      ,line.split(":")[1]," "*(38-len(line.split(":")[1])),"|" \
-                     ,line.split(":")[2]," "*(38-len(line.split(":")[2])),"|"))
+                     ,line.split(":")[2]," "*(38-len(line.split(":")[2])),"|")
 
 #######################################################
 
@@ -764,9 +764,9 @@ def CommonSearch(value, urltemplate, quantity, step, limit, uas, proxies, timeou
             s = requests.Session()
             r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
             if r.status_code != 200:
-                print(("[-] Something is going wrong (status code: {})".format(r.status_code)))
+                print("[-] Something is going wrong (status code: {})".format(r.status_code))
                 return [], []
-            results += r.content
+            results += r.text
         except Exception as e:
             print (e)
 
@@ -790,9 +790,9 @@ def CommonSearch2(value, urltemplate, step, limit, uas, proxies, timeouts):
             s = requests.Session()
             r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
             if r.status_code != 200:
-                print(("[-] Something is going wrong (status code: {})".format(r.status_code)))
+                print("[-] Something is going wrong (status code: {})".format(r.status_code))
                 return [], []
-            results += r.content
+            results += r.text
         except Exception as e:
             print (e)
 
@@ -877,9 +877,9 @@ def YandexSearch(value, limit, uas, proxies, timeouts):
             s = requests.Session()
             r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
             if r.status_code != 200:
-                print(("[-] Something is going wrong (status code: {})".format(r.status_code)))
+                print("[-] Something is going wrong (status code: {})".format(r.status_code))
                 return [], []
-            results += r.content
+            results += r.text
         except Exception as e:
             print (e)
 
@@ -903,9 +903,9 @@ def CrtSearch(value, uas, proxies):
         s = requests.Session()
         r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
         if r.status_code != 200:
-            print(("[-] Something is going wrong (status code: {})".format(r.status_code)))
+            print("[-] Something is going wrong (status code: {})".format(r.status_code))
             return [], []
-        results += r.content
+        results += r.text
     except Exception as e:
         print (e)
 
@@ -927,18 +927,23 @@ def DNSDumpsterSearch(value, uas, proxies):
         myheaders={'User-Agent': PickRandomUA(uas), 'Referer': 'https://dnsdumpster.com'}
         r = s.get(url, verify=False, headers=myheaders, proxies=proxies, timeout=timeout)
         if r.status_code != 200:
-            print(("[-] Something is going wrong (status code: {})".format(r.status_code)))
+            print("[-] Something is going wrong (status code: {})".format(r.status_code))
             return [], []
 
         # get csrf token
         csrf_regex = re.compile("<input type='hidden' name='csrfmiddlewaretoken' value='(.*?)' />", re.S)
-        token = csrf_regex.findall(r.content)[0]
-        token = token.strip()
+        try:
+            token = csrf_regex.findall(r.text)[0]
+        except IndexError:
+            print("[-] Token not found") # FIXME: Continues with blank token
+            token = ""
+        if token != "":
+            token = token.strip()
 
         params = {'csrfmiddlewaretoken': token, 'targetip': value}
         pr = s.post(url, verify=False, headers=myheaders, proxies=proxies, data=params, timeout=timeout)
         if pr.status_code != 200:
-            print(("[-] Something is going wrong (status code: {})".format(pr.status_code)))
+            print("[-] Something is going wrong (status code: {})".format(pr.status_code))
             return [], []
     except Exception as e:
         print (e)
@@ -959,9 +964,9 @@ def PGPSearch(value, uas, proxies):
         s = requests.Session()
         r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
         if r.status_code != 200:
-            print(("[-] Something is going wrong (status code: {})".format(r.status_code)))
+            print("[-] Something is going wrong (status code: {})".format(r.status_code))
             return [], []
-        results += r.content
+        results += r.text
     except Exception as e:
         print (e)
 
@@ -981,9 +986,9 @@ def NetcraftSearch(value, uas, proxies):
         s = requests.Session()
         r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
         if r.status_code != 200:
-            print(("[-] Something is going wrong (status code: {})".format(r.status_code)))
+            print("[-] Something is going wrong (status code: {})".format(r.status_code))
             return [], []
-        results += r.content
+        results += r.text
     except Exception as e:
         print (e)
 
@@ -1003,9 +1008,9 @@ def VTSearch(value, uas, proxies):
         s = requests.Session()
         r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
         if r.status_code != 200:
-            print(("[-] Something is going wrong (status code: {})".format(r.status_code)))
+            print("[-] Something is going wrong (status code: {})".format(r.status_code))
             return [], []
-        results += r.content
+        results += r.text
     except Exception as e:
         print (e)
 
@@ -1029,9 +1034,9 @@ def GoogleSearchEngine(value, site, limit, uas, proxies, timeouts):
             s = requests.Session()
             r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
             if r.status_code != 200:
-                print(("[-] Something is going wrong (status code: {})".format(r.status_code)))
+                print("[-] Something is going wrong (status code: {})".format(r.status_code))
                 return [], []
-            results += r.content
+            results += r.text
         except Exception as e:
             print (e)
 
@@ -1079,9 +1084,9 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
             s = requests.Session()
             r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
             if r.status_code != 200:
-                print(("[-] Something is going wrong (status code: {})".format(r.status_code)))
+                print("[-] Something is going wrong (status code: {})".format(r.status_code))
                 return [], []
-            results += r.content
+            results += r.text
         except Exception as e:
             print (e)
 
@@ -1113,7 +1118,7 @@ def ShodanSearch(domain, api_key):
             return api.search(query)
 
     except shodan.APIError as e:
-            print(('Error: %s' % e))
+            print('Error: %s' % e)
 
     while counter <= limit:
         try:
@@ -1121,9 +1126,9 @@ def ShodanSearch(domain, api_key):
             s = requests.Session()
             r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
             if r.status_code != 200:
-                 print(("[-] Something is going wrong (status code: {})".format(r.status_code)))
+                 print("[-] Something is going wrong (status code: {})".format(r.status_code))
                  return [], []
-            results += r.content
+            results += r.text
         except Exception as e:
             print (e)
 
@@ -1218,7 +1223,7 @@ def SubdomainsReport(engine, subdomains, output_basename):
         return
 
     print('')
-    print(('[*] Found %d subdomains' % (len(subdomains))))
+    print('[*] Found %d subdomains' % (len(subdomains)))
     print('')
     for subdomain in subdomains:
         print(subdomain)
@@ -1266,7 +1271,7 @@ def ShodanReport(results, output_basename):
     engine = "Shodan"
 
     print()
-    print(('Results found: %s' % results['total']))
+    print('Results found: %s' % results['total'])
     print ('------------------')
     print()
 
@@ -1275,18 +1280,18 @@ def ShodanReport(results, output_basename):
     for result in results['matches']:
 
         # Print host info
-        print(('IP: %s' % result['ip_str']))
-        print ('-------------------')
-        print(('Hostnames: ' + ','.join(result['hostnames'])))
-        print(('Organization: %s' % result.get('org','n/a')))
-        print(('Operating System: %s' % result.get('os','n/a')))
-        print(('Port: %s' % result['port']))
+        print('IP: %s' % result['ip_str'])
+        print('-------------------')
+        print('Hostnames: ' + ','.join(result['hostnames']))
+        print('Organization: %s' % result.get('org','n/a'))
+        print('Operating System: %s' % result.get('os','n/a'))
+        print('Port: %s' % result['port'])
 
         # Print banner
         banner = result.get('data')
         if banner is not None:
-            print ('Banner:')
-            print((result['data']))
+            print('Banner:')
+            print(result['data'])
             print()
 
     # Output to file
@@ -1409,13 +1414,13 @@ def HostnamesReport(engine, hostnames, output_basename):
 
 def InfoReport(mode, limit, dnsserver, proxy, domain, ip, uas, output_basename):
 
-    print(("[+] Information gathering: {}".format(mode)))
-    print(("[+] Looking into first {} search engines results".format(limit)))
-    print(("[+] Using DNS server: {}".format(dnsserver)))
+    print("[+] Information gathering: {}".format(mode))
+    print("[+] Looking into first {} search engines results".format(limit))
+    print("[+] Using DNS server: {}".format(dnsserver))
     if proxy:
-        print(("[+] Using Proxy server: {}".format(proxy)))
-    print(("[+] Target: {}:{}".format(domain, ip)))
-    print(("[+] User-agent strings: {}".format(uas)))
+        print("[+] Using Proxy server: {}".format(proxy))
+    print("[+] Target: {}:{}".format(domain, ip))
+    print("[+] User-agent strings: {}".format(uas))
     print()
 
     if output_basename:
@@ -1489,12 +1494,12 @@ def WhoisReport(data, output_basename):
     for key,value in data.items():
         if isinstance(value[0], list):
             print()
-            print((value[1]))
+            print(value[1])
             for val in value[0]:
                 print (val)
             print()
         else:
-            print((value[1] + " " + value[0]))
+            print(value[1] + " " + value[0])
     print()
 
     if output_basename:
@@ -1551,10 +1556,10 @@ def DNSReport(data, output_basename):
 
     for key,value in data.items():
         if(len(value) == 1):
-            print((key + " DNS record: " + value[0]))
+            print(key + " DNS record: " + value[0])
         else:
             print()
-            print((key + " DNS record: "))
+            print(key + " DNS record: ")
             for val in value:
                 print (val)
             print()
@@ -1613,7 +1618,7 @@ def DNSReport(data, output_basename):
 def ReverseDNSReport(ip, data, output_basename):
 
     if data:
-        print((ip + ":" + data))
+        print(ip + ":" + data)
     print()
 
     if output_basename:
