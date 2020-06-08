@@ -35,6 +35,7 @@ __version__ = "1.4.1"
 #######################################################
 
 import argparse
+import mmap
 from argparse import RawTextHelpFormatter
 import censys.certificates
 import validators
@@ -46,16 +47,21 @@ import collections
 import re
 import os
 import random
+
+from censys.base import CensysException
 from dns import reversename, resolver
 import requests
 import time
 import shodan
-import pdb
+import pprint
+# import pdb
 
 #######################################################
 
 from requests.packages.urllib3.exceptions import InsecureRequestWarning #remove insecure https warning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning) #remove insecure https warning
+
+pp = pprint.PrettyPrinter(indent=4)
 
 #######################################################
 
@@ -176,7 +182,7 @@ def CensysPublicScan(api_id , api_sec, output_basename, args, report_buckets, fi
         q,s = BuildQuery(api_id , api_sec, args)
         # count the number of results
         try:
-            count =  q.report(s, "updated_at")['metadata']['count']
+            count = q.report(s, "updated_at")['metadata']['count']
         except CensysException as e:
              print(e.message)
              sys.exit(-1)
@@ -212,7 +218,7 @@ def CensysPublicScan(api_id , api_sec, output_basename, args, report_buckets, fi
             if i >= float(args.Limit):
                 break
             if args.verbose:
-                pprint(q.view(e['ip']))
+                pp.pprint(q.view(e['ip']))
             elif args.filter:
                 print (e) # FIXME: by default dump raw JSON if filters are used
             else:
@@ -565,6 +571,7 @@ def _query(value, dnsserver, record):
     try:
         answers = myresolver.query(value, record)
         for answer in answers:
+            # todo check: this for loop is returning on first loop
             if record == 'NS':
                 return answer.to_text() + ":" + VerifyHostname(answer.to_text())
             elif record == 'MX':
@@ -575,7 +582,7 @@ def _query(value, dnsserver, record):
     except Exception as e:
         return '-'
 
-    return dnsData
+    # return dnsData
 
 
 def DnsQuery(value, dnsserver, record=None):
@@ -1107,9 +1114,16 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
 
 ## Shodan Search ##
 
-def ShodanSearch(domain, api_key):
+def ShodanSearch(api_key, domain, value, uas, proxies, timeouts, limit=0):
+    # Warning: Shodan needs a payment plan
 
     api = shodan.Shodan(api_key)
+    server = "shodan.io"
+    counter = 0
+    quantity = 10
+    step = 10
+    vhosts = []
+    results = ''
 
     # Wrap the request in a try/ except block to catch errors
     try:
@@ -1118,6 +1132,7 @@ def ShodanSearch(domain, api_key):
             return api.search(query)
 
     except shodan.APIError as e:
+            print('Error: %s' % e)
             print('Error: %s' % e)
 
     while counter <= limit:
@@ -1216,7 +1231,7 @@ def Report(engine, emails, hostnames, output_basename):
 
 ## Subdomains Console report ##
 
-def SubdomainsReport(engine, subdomains, output_basename):
+def SubdomainsReport(engine, emails, subdomains, output_basename):
 
     if len(subdomains) == 0:
         print('[-] Did not find any subdomain')
@@ -1841,16 +1856,17 @@ def MainFunc():
 
     match = str(args.match)
 
+    # todo not implemented:
     # fire help before doing any request
-    if args.tags in ['list', 'help']:
-        pprint(tags_available)
-        sys.exit(0)
-    if args.report in ['list', 'help']:
-        pprint(report_fields)
-        sys.exit(0)
-    if args.filter in ['list', 'help']:
-        pprint(filter_fields)
-        sys.exit(0)
+    # if args.tags in ['list', 'help']:
+    #     pp.pprint(tags_available)
+    #     sys.exit(0)
+    # if args.report in ['list', 'help']:
+    #     pp.pprint(report_fields)
+    #     sys.exit(0)
+    # if args.filter in ['list', 'help']:
+    #     pp.pprint(filter_fields)
+    #     sys.exit(0)
 
     if args.report_bucket:
         report_buckets = args.report_bucket
@@ -1945,6 +1961,7 @@ def MainFunc():
         temp1, temp2 = GoogleSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
+        # todo temp1/2 or info[] should be pass below?
         Report("Google", temp1, temp2, output_basename)
 
 #######################################################
@@ -1983,7 +2000,7 @@ def MainFunc():
             print ("[+] Searching in Shodan..")
             print ("-------------------")
 
-            results = ShodanSearch(info['domain'], args.shodankey)
+            results = ShodanSearch(args.shodankey, info['domain'], info['ip'], uas, info['proxies'], timeouts)
             ShodanReport(results, output_basename)
 
 #######################################################
