@@ -876,10 +876,11 @@ def CrtSearch(value, uas, proxies):
     return GetHostnames(results, value)
 
 
-def DNSDumpsterSearch(value, uas, proxies):
+def DNSDumpsterSearch(targetip, uas, proxies):
     server = "dnsdumpster.com"
     results = ""
     timeout = 25
+    subdomains = None
 
     try:
         url = "https://" + server + "/"
@@ -891,26 +892,26 @@ def DNSDumpsterSearch(value, uas, proxies):
             return [], []
 
         # get csrf token
-        csrf_regex = re.compile("<input type='hidden' name='csrfmiddlewaretoken' value='(.*?)' />",
-                                re.S)
+        csrf_regex = re.compile('name="csrfmiddlewaretoken" value="(.*?)"', re.S)
         try:
             token = csrf_regex.findall(r.text)[0]
         except IndexError:
-            print("[-] Token not found")  # FIXME: Continues with blank token
-            token = ""
-        if token != "":
-            token = token.strip()
+            print("[-] CSRF Token not found")
+            return None
 
-        params = {'csrfmiddlewaretoken': token, 'targetip': value}
+        params = {'csrfmiddlewaretoken': token, 'targetip': targetip}
         pr = s.post(url, verify=False, headers=myheaders, proxies=proxies, data=params,
                     timeout=timeout)
         if pr.status_code != 200:
             print("[-] Something is going wrong (status code: {})".format(pr.status_code))
             return [], []
+
+        subdomains = GetDNSDumpsterHostnames(targetip, pr.text)
+
     except Exception as e:
         print(e)
 
-    return GetDNSDumpsterHostnames(value, pr.content)
+    return subdomains
 
 
 def PGPSearch(value, uas, proxies):
@@ -1069,7 +1070,6 @@ def ShodanSearch(api_key, domain, value, uas, proxies, timeouts, limit=0):
         return api.search(query)
 
     except shodan.APIError as e:
-        print('Error: %s' % e)
         print('Error: %s' % e)
 
     while counter <= limit:
