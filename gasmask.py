@@ -863,7 +863,7 @@ def CrtSearch(value, uas, proxies):
     results = ""
 
     try:
-        url = "https://" + server + "/?q=%25" + value
+        url = "https://" + server + "/?q=" + value
         s = requests.Session()
         r = s.get(url, verify=False, headers={'User-Agent': PickRandomUA(uas)}, proxies=proxies)
         if r.status_code != 200:
