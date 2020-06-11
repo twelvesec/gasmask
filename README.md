@@ -9,11 +9,13 @@ Written by:
 * [maldevel](https://github.com/maldevel) ([twitter](https://twitter.com/maldevel))
 * [mikismaos](https://github.com/mikismaos)
 * [xvass](https://github.com/xvass)
+* [ndamoulianos](https://github.com/ndamoulianos)
+* [sbrb](https://github.com/sbrb)
 ---
 
 ### Dependencies
 
-* Python 2.x
+* Python 3.x
 * validators
 * python-whois
 * dnspython
@@ -25,7 +27,6 @@ Written by:
 
 
 ### Information Gathering
-
 
 * ask
 * bing
@@ -57,7 +58,7 @@ Written by:
 ### Dependencies
 
 ```
-sudo pip install -r requirements.txt
+sudo pip3 install -r requirements.txt
 ```
 
 ---
@@ -73,7 +74,7 @@ sudo pip install -r requirements.txt
 
 GasMasK - All in one Information gathering tool - OSINT
 Ver. 1.2
-Written by: @maldevel, @mikismaos, @xvass
+Written by: @maldevel, @mikismaos, @xvass, @ndamoulianos, @sbrb
 https://www.twelvesec.com/
 
 usage: gasmask.py [-h] [-d DOMAIN] [-s NAMESERVER] [-x PROXY] [-l LIMIT]

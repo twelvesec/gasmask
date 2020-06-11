@@ -28,7 +28,7 @@
 """
 
 __author__ = "maldevel"
-__credits__ = ["maldevel", "mikismaos", "xvass"]
+__credits__ = ["maldevel", "mikismaos", "xvass", "ndamoulianos", "sbrb"]
 __license__ = "GPLv3"
 __version__ = "1.4.1"
 
@@ -52,7 +52,7 @@ import random
 from censys.base import CensysException
 from censys.ipv4 import CensysIPv4
 from colorama import Style, Fore
-from dns import reversename, resolver
+from dns import reversename
 import requests
 import time
 import shodan
@@ -61,12 +61,9 @@ import pprint
 
 #######################################################
 
-from requests.packages.urllib3.exceptions import \
-    InsecureRequestWarning  # remove insecure https warning
-
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # remove insecure https warning
-
-pp = pprint.PrettyPrinter(indent=4)
+# remove insecure https warning
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 #######################################################
 
@@ -80,13 +77,15 @@ ___________              .__                _________
 
 GasMasK v. {} - All in one Information gathering tool - OSINT
 GasMasK is an open source tool licensed under GPLv3.
-Written by: @maldevel, mikismaos, xvass
+Written by: @maldevel, mikismaos, xvass, ndamoulianos, sbrb
 https://www.twelvesec.com/
 Please visit https://github.com/twelvesec/gasmask for more..
 """.format(__version__)
 
 
 # ######################  Global Variables ##################  #
+
+pp = pprint.PrettyPrinter(indent=4)
 
 DEBUG = True
 
@@ -815,6 +814,7 @@ def AskSearch(value, limit, uas, proxies, timeouts):
     return CommonSearch2(value, url, step, limit, uas, proxies, timeouts)
 
 
+# todo captcha
 def DogpileSearch(value, limit, uas, proxies, timeouts):
     step = 15
     url = "https://www.dogpile.com/search/web?qsi={counter}&q=%40{value}"
@@ -914,6 +914,7 @@ def DNSDumpsterSearch(targetip, uas, proxies):
     return subdomains
 
 
+# todo MIT's pgp lookup service seems down
 def PGPSearch(value, uas, proxies):
     server = "pgp.mit.edu"
     results = ""
@@ -1914,7 +1915,6 @@ def MainFunc():
         temp1, temp2 = GoogleSearch(info['domain'], info['limit'], uas, info['proxies'], timeouts)
         info['all_emails'].extend(temp1)
         info['all_hosts'].extend(temp2)
-        # TODO temp1/2 or info[] should be pass below?
         Report("Google", temp1, temp2, output_basename)
 
     #######################################################
@@ -2259,15 +2259,6 @@ def MainFunc():
         with open(output, 'a') as xml, open(output1, 'a') as html:
             xml.write("</report>\n")
             html.write("</body></html>\n")
-
-    #######################################################
-
-    # Censys.io search #
-    # TODO already ran?
-    # if any(i in ['censys'] for i in info['mode']):
-    #     print("[+] Searching in Censys.io..")
-    #     temp1 = CensysSearch(info['domain'], info['censys_api_id'], info['censys_api_secret'])
-    #     info['domain'].extend(temp1)
 
 
 #######################################################
