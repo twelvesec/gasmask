@@ -38,6 +38,8 @@ import argparse
 import mmap
 import tempfile
 from argparse import RawTextHelpFormatter
+from pathlib import Path
+
 import censys.certificates
 import validators
 import sys
@@ -86,7 +88,7 @@ Please visit https://github.com/twelvesec/gasmask for more..
 # ######################  Global Variables ##################  #
 
 pp = pprint.PrettyPrinter(indent=4)
-
+KEYS_FILE = Path(__file__).parent.absolute().joinpath('api_keys.txt')
 DEBUG = True
 
 
@@ -432,10 +434,10 @@ def DomainSearchCensys(domain_name, api_id, api_sec, output_basename, domains):
 
 def checkFile():
     """ Check if file exists """
-    is_true = os.path.isfile("./api_keys.txt")
+    is_true = os.path.isfile(KEYS_FILE)
     if is_true != True:
         return False
-    if os.path.getsize("./api_keys.txt") == 0:
+    if os.path.getsize(KEYS_FILE) == 0:
         return False
     else:
         return True
@@ -447,7 +449,7 @@ def checkUser(engine):
     if not chk:
         return False
     else:
-        with open('./api_keys.txt') as f:
+        with open(KEYS_FILE) as f:
             s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
             if s.find(engine) != -1:
                 return True
@@ -459,7 +461,7 @@ def checkUser(engine):
 
 def readFileContents():
     """ Read API Keys from file """
-    with open('./api_keys.txt') as f:
+    with open(KEYS_FILE) as f:
         lines = f.read().splitlines()
         print(
             "|       Engine       |                API Keys ID              |              API Secret Keys            |"
@@ -475,7 +477,7 @@ def readFileContents():
 
 def createFileAndStoreAPIKeys(engine):
     """ Create file and Store the API Keys """
-    f = open("api_keys.txt", "w+")
+    f = open(KEYS_FILE, "w+")
     api_id = input("[*] please provide the new %s API ID: " % engine)
     api_sec = input("[*] please provide the new %s API Secret: " % engine)
     f.write(engine + ":" + api_id + ":" + api_sec)
@@ -488,17 +490,17 @@ def updateAPIKeys(engine):
     ckhstored = checkUser(engine)
     api_id = input("[*] please provide the new %s API ID: " % engine)
     api_sec = input("[*] please provide the new %s API Secret: " % engine)
-    with open("api_keys.txt", "r+") as op:
+    with open(KEYS_FILE, "r+") as op:
         lines = op.read().splitlines()
         if ckhstored == True:
             for line in lines:
                 if line != line.split(":")[0]:
-                    with open("api_keys.txt", "w+") as f:
+                    with open(KEYS_FILE, "w+") as f:
                         f.write(line)
 
             for line in lines:
                 if line != line.split(":")[0]:
-                    with open("api_keys.txt", "w+") as f1:
+                    with open(KEYS_FILE, "w+") as f1:
                         f1.write(engine + ":" + api_id + ":" + api_sec)
             return 'y'
 
@@ -1712,8 +1714,33 @@ def FinalReport(info, output_basename):
             md.write("\n")
             xml.write("</FinalReport>\n")
 
+#######################################################
+
+
+def _get_key(service_name):
+    """
+    Parses the api keys file and returns the corresponding key
+    Doesn't work for censys. Works only for services with one key
+
+    :param service_name: The online service e.g spyse
+    :type service_name: :class: `str`
+    """
+    key = None
+    if checkFile():
+        with open(KEYS_FILE, 'r') as fin:
+            lines = fin.readlines()
+            for l in lines:
+                if l.lower().startswith(service_name) and ':' in l:
+                    try:
+                        key = l.strip(' \r\n').split(':')[1]
+                    except IndexError:
+                        print(KEYS_FILE
+                              + " doesnt follow the correct format name:value")
+
+    return key
 
 #######################################################
+
 
 def MainFunc():
     print(message)
@@ -2134,7 +2161,7 @@ def MainFunc():
                             print("[*] Exiting...")
                             exit(0)
                         if answer1 == 'y':
-                            with open('./api_keys.txt') as f:
+                            with open(KEYS_FILE) as f:
                                 lines = f.read().splitlines()
                                 print("[+] Searching in Censys.io..")
                                 print()
@@ -2176,7 +2203,7 @@ def MainFunc():
                             "[*] would you like to continue searching with censys.io ? [y/n] ")
                         print()
                         if answer1 == 'y':
-                            with open('./api_keys.txt') as f:
+                            with open(KEYS_FILE) as f:
                                 lines = f.read().splitlines()
                                 print("[+] Searching in Censys.io..")
                                 print()
@@ -2195,8 +2222,8 @@ def MainFunc():
                             print("[*] Exiting...")
                             exit(0)
                 else:
-                    if args.read_api_keys != True or args.read_api_keys != True:
-                        with open('./api_keys.txt') as f:
+                    if args.read_api_keys is not True:
+                        with open(KEYS_FILE) as f:
                             lines = f.read().splitlines()
                             print("[+] Searching in Censys.io..")
                             print()
@@ -2221,7 +2248,7 @@ def MainFunc():
                         "[*] would you like to continue searching with censys.io ? [y/n] ")
                     print()
                     if answer1 == 'y':
-                        with open('./api_keys.txt') as f:
+                        with open(KEYS_FILE) as f:
                             lines = f.read().splitlines()
                             print("[+] Searching in Censys.io..")
                             print()
