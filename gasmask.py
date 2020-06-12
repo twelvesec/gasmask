@@ -35,6 +35,7 @@ __version__ = "1.4.1"
 #######################################################
 
 import argparse
+import json
 import mmap
 import tempfile
 from argparse import RawTextHelpFormatter
@@ -724,6 +725,20 @@ def GetDNSDumpsterHostnames(value, results):
     return sorted(set(subdomains))
 
 
+def SpyseGetDomains(data):
+    """
+    :type data: dict
+    :rtype: list
+    """
+    domains = []
+    try:
+        domains = [i['name'] for i in data['data']['items']]
+    except IndexError:
+        print("Unrecognised data returned by Spyse")
+
+    return domains
+
+
 # ################## User Agent #################### #
 
 def PickRandomUA(value):
@@ -971,6 +986,53 @@ def VTSearch(value, uas, proxies):
     return GetHostnames(results, value)
 
 
+def SpyseSearch(value, apikey, limit=100, proxies=None):
+    server = "api.spyse.com"
+    data = {}
+
+    try:
+        url = f'https://{server}/v2/data/domain/subdomain?limit={limit}&domain={value}'
+        headers = {
+            'accept': 'application/json',
+            'Authorization': f'Bearer {apikey}',
+        }
+        s = requests.Session()
+        r = s.get(url, verify=False, headers=headers, proxies=proxies)
+        if DEBUG: print(r.text)
+        if r.status_code != 200:
+            print(f'[-] Something is going wrong - status code: {r.status_code}')
+        else:
+            data = json.loads(r.text)
+    except (ValueError, TypeError):
+        print("Unrecognised data returned by spyse api")
+    except NameError as e:
+        print("Error: Insufficient data passed to SpyseSearch")
+        print(e)
+    except Exception as e:
+        print(e)
+
+    return data
+
+
+def CensysSearch(value, api_id, api_secret):
+    try:
+        censys_certificates = censys.certificates.CensysCertificates(api_id=api_id,
+                                                                     api_secret=api_secret)
+        certificate_query = 'parsed.names: %s' % value
+        certificates_search_results = censys_certificates.search(certificate_query,
+                                                                 fields=['parsed.names'])
+        subdomains = []
+        for search_result in certificates_search_results:
+            subdomains.extend(search_result['parsed.names'])
+        return set(subdomains)
+    except censys.base.CensysUnauthorizedException:
+        sys.stderr.write('[-] Your Censys credentials look invalid.\n')
+        exit(1)
+    except censys.base.CensysRateLimitExceededException:
+        sys.stderr.write('[-] Looks like you exceeded your Censys account limits rate. Exiting\n')
+        exit(1)
+
+
 def GoogleSearchEngine(value, site, limit, uas, proxies, timeouts):
     """ google search in site """
     server = "www.google.com"
@@ -997,25 +1059,6 @@ def GoogleSearchEngine(value, site, limit, uas, proxies, timeouts):
         counter += step
 
     return GetEmails(results, value), GetHostnames(results, value)
-
-
-def CensysSearch(value, api_id, api_secret):
-    try:
-        censys_certificates = censys.certificates.CensysCertificates(api_id=api_id,
-                                                                     api_secret=api_secret)
-        certificate_query = 'parsed.names: %s' % value
-        certificates_search_results = censys_certificates.search(certificate_query,
-                                                                 fields=['parsed.names'])
-        subdomains = []
-        for search_result in certificates_search_results:
-            subdomains.extend(search_result['parsed.names'])
-        return set(subdomains)
-    except censys.base.CensysUnauthorizedException:
-        sys.stderr.write('[-] Your Censys credentials look invalid.\n')
-        exit(1)
-    except censys.base.CensysRateLimitExceededException:
-        sys.stderr.write('[-] Looks like you exceeded your Censys account limits rate. Exiting\n')
-        exit(1)
 
 
 def BingVHostsSearch(value, limit, uas, proxies, timeouts):
@@ -1760,7 +1803,7 @@ def MainFunc():
     modes = ['basic', 'nongoogle', 'whois', 'dns', 'revdns', 'vhosts', 'google', 'bing', 'yahoo',
              'ask', 'dogpile', 'yandex', 'linkedin', 'twitter', 'youtube', 'reddit',
              'github', 'instagram', 'crt', 'pgp', 'netcraft', 'virustotal', 'dnsdump', 'shodan',
-             'censys']
+             'censys', 'spyse']
 
     parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
     parser.add_argument("-d", '--domain', action="store", metavar='DOMAIN', dest='domain',
@@ -1783,6 +1826,8 @@ def MainFunc():
     parser.add_argument('-k', '--shodan-key', action='store', metavar='API-KEY', dest='shodankey',
                         type=str, default=None,
                         help='API key to use with Shodan search (MODE="shodan")')
+    parser.add_argument('-e', '--spyse-key', action='store', metavar='SPYSE_API_KEY',
+                        dest='spysekey', type=str, default=None)
     # censys.io
     parser.add_argument('-m', '--match', default=None,
                         help='Highlight a string within an existing query result')
@@ -2058,6 +2103,19 @@ def MainFunc():
         HostnamesReport("VirusTotal", temp, output_basename)
 
     #######################################################
+
+    # spyse search #
+    if any(i in ['spyse'] for i in info['mode']):
+        spysekey = args.spysekey or _get_key('spyse')
+        if not spysekey:
+            print("Api Key for spyse was neither provided in cmd line and "
+                  "nor located inside %s file" % KEYS_FILE)
+        else:
+            print("[+] Searching in Spyse..")
+            temp = SpyseSearch(info['domain'], spysekey, args.limit, info['proxies'])
+            subdomains = SpyseGetDomains(temp)
+            info['all_hosts'].extend(subdomains)
+            SubdomainsReport("SpyseSearch", subdomains, output_basename)
 
     # LinkedIn search #
     if any(i in ['linkedin'] for i in info['mode']):
