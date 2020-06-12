@@ -249,7 +249,7 @@ def CensysPublicScan(api_id, api_sec, output_basename, args, report_buckets,
             if args.verbose:
                 pp.pprint(q.view(e['ip']))
             elif args.filter:
-                print(e)  # FIXME: by default dump raw JSON if filters are used
+                print(e)  # todo: by default dump raw JSON if filters are used
             else:
                 public_info = print_short(e)
                 public_info2.extend(public_info)
@@ -558,7 +558,6 @@ def WhoisQuery(value):
     for rec in whoisData:
         if domain[rec]:
             if isinstance(domain[rec], list):
-                # TODO whoisData[rec][0] may be str
                 if rec == 'name_servers':
                     whoisData[rec][0] = []
                     for val in domain[rec]:
@@ -588,10 +587,10 @@ def _query(value, dnsserver, record):
                 return answer.to_text() + ":" + VerifyHostname(domain_name)
             else:
                 return answer.to_text()
-    except Exception as e:
+    except Exception:
         return '-'
 
-    # return dnsData
+    return None  # dnsData?
 
 
 def DnsQuery(value, dnsserver, record=None):
@@ -631,7 +630,7 @@ def ReverseIPQuery(value, dnsserver):
         return ''
 
 
-#######################################################
+# ##########  Parse the Results to get usefull data ############## #
 
 def CleanHTML(results):
     """ Clean HTML tags """
@@ -656,6 +655,7 @@ def GetEmails(results, value):
     res = results
     res = CleanHTML(res)
 
+    # todo this regex needs improvement per case/service
     temp = re.compile(
         '[a-zA-Z0-9.\-_+#~!$&\',;=:]+' +
         '@' +
@@ -931,7 +931,7 @@ def DNSDumpsterSearch(targetip, uas, proxies):
     return subdomains
 
 
-# todo MIT's pgp lookup service seems down
+# todo pgp.mit.edu lookup service seems down
 def PGPSearch(value, uas, proxies):
     server = "pgp.mit.edu"
     results = ""
@@ -1098,8 +1098,9 @@ def BingVHostsSearch(value, limit, uas, proxies, timeouts):
     return sorted(set(vhosts))
 
 
+# todo if the API is used (valid key), the rtype is `dict` else
+# the search is done via the website and the rtype is a `set` of vhosts
 def ShodanSearch(api_key, domain, value, uas, proxies, timeouts, limit=0):
-    # Warning: Shodan needs a payment plan
 
     api = shodan.Shodan(api_key)
     server = "shodan.io"
@@ -1109,6 +1110,7 @@ def ShodanSearch(api_key, domain, value, uas, proxies, timeouts, limit=0):
     vhosts = []
     results = ''
 
+    # Warning: Shodan api needs a payment plan!
     # Wrap the request in a try/ except block to catch errors
     try:
         # Search by hostname
@@ -1215,6 +1217,7 @@ def Report(engine, emails, hostnames, output_basename):
 
 def SubdomainsReport(engine, subdomains, output_basename):
     """ Subdomains Console report """
+    assert type(subdomains) in (list, tuple, dict)  # should be list
     if len(subdomains) == 0:
         print('[-] Did not find any subdomain')
         return
@@ -1264,6 +1267,16 @@ def SubdomainsReport(engine, subdomains, output_basename):
 def ShodanReport(results, output_basename):
     """ Shodan Console Report """
     engine = "Shodan"
+    if len(results) == 0:
+        print('[-] Did not find any results')
+        return
+
+    if type(results) in (set, list, tuple):
+        print('Shodan Report is not available for the current results')
+        print('Results found: %s' % len(results))
+        for r in results:
+            print(r)
+        return
 
     print()
     print('Results found: %s' % results['total'])
@@ -1357,6 +1370,8 @@ def PrintField(label, value, txt, md, xml, html):
 
 def HostnamesReport(engine, hostnames, output_basename):
     """ Hostnames Console report """
+    assert type(hostnames) in (list, tuple, dict)  # should be list
+
     print()
     print("Hostnames:")
     for host in hostnames:
@@ -1538,7 +1553,7 @@ def WhoisReport(data, output_basename):
 def DNSReport(data, output_basename):
     """ DNS Console report """
     for key, value in data.items():
-        if (len(value) == 1):
+        if len(value) == 1:
             print(key + " DNS record: " + value[0])
         else:
             print()
@@ -1564,7 +1579,7 @@ def DNSReport(data, output_basename):
             html.write("<h3>DNS queries</h3>\n<ul>\n")
 
             for key, value in data.items():
-                if (len(value) == 1):
+                if len(value) == 1:
                     txt.write("{} DNS record: {}\n".format(key, value[0]))
                     md.write("* {} DNS record: {}\n".format(key, value[0]))
                     xml.write("<{}>{}</{}>\n".format(key, value[0], key))
@@ -1668,21 +1683,21 @@ def FinalReport(info, output_basename):
     print("[+] Search engines results - Final Report")
     print("-----------------------------------------")
 
-    if info['all_emails'] != []:
+    if info['all_emails']:
         print()
         print("Emails:")
         print()
         for email in info['all_emails']:
             print(email)
 
-    if info['all_hosts'] != []:
+    if info['all_hosts']:
         print()
         print("Hostnames:")
         print()
         for host in info['all_hosts']:
             print(host)
 
-    if info['domains'] != []:
+    if info['domains']:
         print()
         print("Subdomains:")
         print()
@@ -2185,9 +2200,9 @@ def MainFunc():
     #######################################################
 
     # Censys.io search #
-    api_id = args.censys_api_id
-    api_secret = args.censys_api_secret
     if any(i in ['censys'] for i in info['mode']):
+        api_id = args.censys_api_id
+        api_secret = args.censys_api_secret
         if api_id is not None and api_secret is not None:
             print("[+] Searching in Censys.io..\n")
             res1 = DomainSearchCensys(info['domain'], api_id, api_secret,
@@ -2247,8 +2262,7 @@ def MainFunc():
                     exit(0)
 
             if chkstored is True:
-                if ((args.update_api_keys is True or args.update_api_keys is True) and (
-                        args.mode == 'censys') and flag != 1):
+                if args.update_api_keys is True and args.mode == 'censys' and flag != 1:
                     keysupdate = updateAPIKeys('censys')
                     if keysupdate == 'n':
                         print("[x] the keys have not been updated")
@@ -2297,8 +2311,7 @@ def MainFunc():
                                           "perform scanning. For more information use the '--help'"
                                           " option\n")
 
-                if ((args.read_api_keys == True or args.read_api_keys == True) and (
-                        args.mode == 'censys') and flag != 1):
+                if args.read_api_keys is True and args.mode == 'censys' and flag != 1:
                     print()
                     readFileContents()
                     print()
