@@ -52,6 +52,7 @@ Written by:
 * yahoo
 * yandex
 * youtube
+* spyse
 
 ---
 
@@ -100,7 +101,7 @@ optional arguments:
   
   -l LIMIT, --limit, LIMIT  Limit the number of search engine results (default: 100).
   
-  -i MODE, --info MODE  Limit information gathering (basic,whois,dns,revdns,vhosts,google,bing,yahoo,ask,dogpile,yandex,censys,linkedin,twitter,googleplus,youtube,reddit,github,instagram,crt,pgp,netcraft,virustotal,dnsdump).
+  -i MODE, --info MODE  Limit information gathering (basic,whois,dns,revdns,vhosts,google,bing,yahoo,ask,dogpile,yandex,censys,linkedin,twitter,googleplus,youtube,reddit,github,instagram,crt,pgp,netcraft,virustotal,dnsdump,spyse).
   
   -o BASENAME, --output BASENAME,   Output in the four major formats at once (markdown, txt, xml and html).
   
