@@ -174,6 +174,7 @@ optional arguments:
   * Search in DNSdumpster
   * Search in Netcraft
   * Search in VirusTotal
+  * Search in Spyse
 
 ---
 
