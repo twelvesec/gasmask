@@ -2120,10 +2120,10 @@ def MainFunc():
     #######################################################
 
     # spyse search #
-    if any(i in ['spyse'] for i in info['mode']):
+    if any(i in ['spyse', 'nongoogle'] for i in info['mode']):
         spysekey = args.spysekey or _get_key('spyse')
         if not spysekey:
-            print("Api Key for spyse was neither provided in cmd line and "
+            print("Api Key for spyse was neither provided in cmd line "
                   "nor located inside %s file" % KEYS_FILE)
         else:
             print("[+] Searching in Spyse..")
