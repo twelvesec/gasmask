@@ -75,7 +75,7 @@ ___________              .__                _________
   |____|    \/\_/  \___  >____/\_/  \___  >_______  /\___  >\___  >
                        \/               \/        \/     \/     \/ 
 
-GasMasK v. 1.5.1 - All in one Information gathering tool - OSINT
+GasMasK v. 2.0 - All in one Information gathering tool - OSINT
 GasMasK is an open source tool licensed under GPLv3.
 Written by: @maldevel, mikismaos, xvass, ndamoulianos, sbrb
 https://www.twelvesec.com/

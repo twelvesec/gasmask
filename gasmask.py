@@ -30,7 +30,7 @@
 __author__ = "maldevel"
 __credits__ = ["maldevel", "mikismaos", "xvass", "ndamoulianos", "sbrb"]
 __license__ = "GPLv3"
-__version__ = "1.5.1"
+__version__ = "2.0"
 
 #######################################################
 
