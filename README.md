@@ -67,89 +67,86 @@ sudo pip3 install -r requirements.txt
 ### Usage
 
 ```
-    ______           __  ___           __ __
-  / ____/___ ______/  |/  /___ ______/ //_/
- / / __/ __ `/ ___/ /|_/ / __ `/ ___/ ,<
-/ /_/ / /_/ (__  ) /  / / /_/ (__  ) /| |
-\____/\__,_/____/_/  /_/\__,_/____/_/ |_|
 
-GasMasK - All in one Information gathering tool - OSINT
-Ver. 1.2
-Written by: @maldevel, @mikismaos, @xvass, @ndamoulianos, @sbrb
+___________              .__                _________              
+\__    ___/_  _  __ ____ |  |___  __ ____  /   _____/ ____   ____  
+  |    |  \ \/ \/ // __ \|  |\  \/ // __ \ \_____  \_/ __ \_/ ___\ 
+  |    |   \     /\  ___/|  |_\   /\  ___/ /        \  ___/\  \___ 
+  |____|    \/\_/  \___  >____/\_/  \___  >_______  /\___  >\___  >
+                       \/               \/        \/     \/     \/ 
+
+GasMasK v. 1.5 - All in one Information gathering tool - OSINT
+GasMasK is an open source tool licensed under GPLv3.
+Written by: @maldevel, mikismaos, xvass, ndamoulianos, sbrb
 https://www.twelvesec.com/
+Please visit https://github.com/twelvesec/gasmask for more..
 
 usage: gasmask.py [-h] [-d DOMAIN] [-s NAMESERVER] [-x PROXY] [-l LIMIT]
-                  [-i MODE] [-o BASENAME] [-m MATCH] [-f FILTER] [--count]
-                  [-R REPORT] [-B REPORT_BUCKET] [-1 CENSYS_API_ID]
-                  [-2 CENSYS_API_SECRET] [-r] [-u] [-a ASN] [-c COUNTRY]
-                  [-O CERT_ORG] [-I CERT_ISSUER] [-z CERT_HOST]
-                  [-S HTTP_SERVER] [-t HTML_TITLE] [-b HTML_BODY] [-T TAGS]
-                  [-L LIMIT] [-D] [-v] [-H]
+                  [-i MODE] [-o BASENAME] [-k API-KEY] [-e SPYSE_API_KEY]
+                  [-m MATCH] [-f FILTER] [--count] [-R REPORT]
+                  [-B REPORT_BUCKET] [-1 CENSYS_API_ID] [-2 CENSYS_API_SECRET]
+                  [-r] [-u] [-a ASN] [-c COUNTRY] [-O CERT_ORG]
+                  [-I CERT_ISSUER] [-z CERT_HOST] [-S HTTP_SERVER]
+                  [-t HTML_TITLE] [-b HTML_BODY] [-T TAGS] [-L LIMIT] [-D]
+                  [-v] [-H]
                   [arguments [arguments ...]]
 
 positional arguments:
   arguments             Censys query
 
 optional arguments:
-  -h --help,   show this help message and exit
-  
-  -d DOMAIN, --domain DOMAIN, Domain to search.
-  
-  -s NAMESERVER, --server NAMESERVER,  DNS server to use.
-  
-  -x PROXY, --proxy, PROXY Use a proxy server when retrieving results from search engines (eg. '-x http://127.0.0.1:8080')
-  
-  -l LIMIT, --limit, LIMIT  Limit the number of search engine results (default: 100).
-  
-  -i MODE, --info MODE  Limit information gathering (basic,whois,dns,revdns,vhosts,google,bing,yahoo,ask,dogpile,yandex,censys,linkedin,twitter,googleplus,youtube,reddit,github,instagram,crt,pgp,netcraft,virustotal,dnsdump,spyse).
-  
-  -o BASENAME, --output BASENAME,   Output in the four major formats at once (markdown, txt, xml and html).
-  
-  -k API-KEY, --shodan-key API-KEY API key to use with Shodan search (MODE="shodan")
-  
-  -m MATCH, --match MATCH, Highlight a string within an existing query result
-  
-  -f FILTER, --filter FILTER Filter the JSON keys to display for each result (use value 'help' for interesting fields)
-  
-  --count,  Print the count result and exit
-  
-  -R REPORT, --report REPORT, Stats on given field (use value 'help' for listing interesting fields)
-						
-  -B REPORT_BUCKET, --report_bucket REPORT_BUCKET,  Bucket length in report mode (default: 50)
-						
-  -1 CENSYS_API_ID, --censys_api_id CENSYS_API_ID,  Provide the authentication ID for the censys.io search engine
-  
-  -2 CENSYS_API_SECRET, --censys_api_secret CENSYS_API_SECRET, Provide the secret hash for the censys.io search engine
-						
-  -r, --read_api_keys, Read the API Keys stored in api_keys.txt file. (e.g. '-i censys -r')
-  
-  -u, --update_api_keys, Update the API Keys stored in api_keys.txt file. (e.g. '-i censys -u')
-						
-  -a ASN, --asn ASN, Filter with ASN (e.g 5408 for GR-NET AS)
-  
-  -c COUNTRY, --country COUNTRY, Filter with country
-  
-  -O CERT_ORG, --cert-org CERT_ORG, Certificate issued to organization
-  
-  -I CERT_ISSUER, --cert-issuer CERT_ISSUER,  Certificate issued by organization
-  
-  -z CERT_HOST, --cert-host CERT_HOST,  hostname Certificate is issued to
-						
-  -S HTTP_SERVER, --http-server HTTP_SERVER, Server header
-  
-  -t HTML_TITLE, --html-title HTML_TITLE, Filter on html page title
-  
-  -b HTML_BODY, --html-body HTML_BODY,  Filter on html body content
-  
-  -T TAGS, --tags TAGS,  Filter on specific tags. e.g: -T tag1,tag2,... (use keyword 'list' to list usual tags
-  
-  -L LIMIT, --Limit LIMIT, Limit to N results ( this is for censys.io )
-  
-  -D, --debug, Debug informations
-  
-  -v, --verbose, Print raw JSON records
-  
-  -H, --html,  Renders html elements in a browser
+  -h, --help            show this help message and exit
+  -d DOMAIN, --domain DOMAIN
+                        Domain to search.
+  -s NAMESERVER, --server NAMESERVER
+                        DNS server to use.
+  -x PROXY, --proxy PROXY
+                        Use a proxy server when retrieving results from search engines (eg. '-x http://127.0.0.1:8080')
+  -l LIMIT, --limit LIMIT
+                        Limit the number of search engine results (default: 100).
+  -i MODE, --info MODE  Limit information gathering (basic,nongoogle,whois,dns,revdns,vhosts,google,bing,yahoo,ask,dogpile,yandex,linkedin,twitter,youtube,reddit,github,instagram,crt,pgp,netcraft,virustotal,dnsdump,shodan,censys,spyse).
+  -o BASENAME, --output BASENAME
+                        Output in the four major formats at once (markdown, txt, xml and html).
+  -k API-KEY, --shodan-key API-KEY
+                        API key to use with Shodan search (MODE="shodan")
+  -e SPYSE_API_KEY, --spyse-key SPYSE_API_KEY
+  -m MATCH, --match MATCH
+                        Highlight a string within an existing query result
+  -f FILTER, --filter FILTER
+                        Filter the JSON keys to display for each result, use value 'help' for interesting fields
+  --count               Print the count result and exit
+  -R REPORT, --report REPORT
+                        Stats on given field (use value 'help' for listing interesting fields)'
+  -B REPORT_BUCKET, --report_bucket REPORT_BUCKET
+                        Bucket len in report mode (default: 10)
+  -1 CENSYS_API_ID, --censys_api_id CENSYS_API_ID
+                        Provide the authentication ID for the censys.io search engine
+  -2 CENSYS_API_SECRET, --censys_api_secret CENSYS_API_SECRET
+                        Provide the secret hash for the censys.io search engine
+  -r, --read_api_keys   Read the API Keys stored in api_keys.txt file. (e.g. '-i censys -r')
+  -u, --update_api_keys
+                        Update the API Keys stored in api_keys.txt file. (e.g. '-i censys -u')
+  -a ASN, --asn ASN     Filter with ASN (e.g 5408 for GR-NET AS)
+  -c COUNTRY, --country COUNTRY
+                        Filter with country
+  -O CERT_ORG, --cert-org CERT_ORG
+                        Certificate issued to organization
+  -I CERT_ISSUER, --cert-issuer CERT_ISSUER
+                        Certificate issued by organization
+  -z CERT_HOST, --cert-host CERT_HOST
+                        hostname Certificate is issued to
+  -S HTTP_SERVER, --http-server HTTP_SERVER
+                        Server header
+  -t HTML_TITLE, --html-title HTML_TITLE
+                        Filter on html page title
+  -b HTML_BODY, --html-body HTML_BODY
+                        Filter on html body content
+  -T TAGS, --tags TAGS  Filter on specific tags. e.g: -T tag1,tag2,... (use keyword 'list' to list usual tags
+  -L LIMIT, --Limit LIMIT
+                        Limit to N results
+  -D, --debug           Debug information
+  -v, --verbose         Print raw JSON records
+  -H, --html            Renders html elements in a browser
 
 ```
 
