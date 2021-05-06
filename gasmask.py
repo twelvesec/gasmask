@@ -577,7 +577,7 @@ def _query(value, dnsserver, record):
     myresolver.nameservers = [dnsserver]
 
     try:
-        answers = myresolver.query(value, record)
+        answers = myresolver.resolve(value, record)
         for answer in answers:
             # TODO check: this for loop is returning on first loop
             if record == 'NS':
@@ -624,7 +624,7 @@ def ReverseIPQuery(value, dnsserver):
         revname = reversename.from_address(value)
         myresolver = dns.resolver.Resolver()
         myresolver.nameservers = [dnsserver]
-        return str(myresolver.query(revname, 'PTR')[0]).rstrip('.')
+        return str(myresolver.resolve(revname, 'PTR')[0]).rstrip('.')
     except Exception as e:
         print(e)
         return ''
