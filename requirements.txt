@@ -3,4 +3,4 @@ python-whois
 dnspython
 requests
 shodan
-censys
+censys==0.0.8
