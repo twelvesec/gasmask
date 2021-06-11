@@ -8,7 +8,7 @@ Written by:
 
 * [maldevel](https://github.com/maldevel) ([twitter](https://twitter.com/maldevel))
 * [mikismaos](https://github.com/mikismaos)
-* [xvass](https://github.com/xen0vas)
+* [xen0vas](https://github.com/xen0vas)
 * [ndamoulianos](https://github.com/ndamoulianos)
 * [sbrb](https://github.com/sbrb)
 ---
